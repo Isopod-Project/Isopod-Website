@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary-bg: #1A1A1A;
+  --color-secondary-bg: #242424;
+  --color-surface-card: #323232;
+  --color-accent-emerald: #34D399;
+  --color-accent-cobalt: #3E8ED0;
+  --color-text-primary: #E0E0E0;
+  --color-text-secondary: #A1A1AA;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-primary-bg text-text-primary antialiased;
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-in {
+  animation: slideInFromTop 0.6s ease-out forwards, fadeIn 0.6s ease-out forwards;
+}
+
+/* Glassmorphism Utilities */
+.glass-card {
+  background: rgba(50, 50, 50, 0.3);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+}
+
+.glass-card-hover {
+  transition: all 0.3s ease-out;
+}
+
+.glass-card-hover:hover {
+  background: rgba(60, 60, 60, 0.4);
+  transform: translateY(-4px);
+  border-color: rgba(52, 211, 153, 0.2);
+}
+
+.glass-header {
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Mesh Background */
+.mesh-gradient {
+  background-image: radial-gradient(circle at 50% 50%, #242424 0%, #1A1A1A 100%);
+}
