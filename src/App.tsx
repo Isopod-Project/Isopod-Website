@@ -116,10 +116,12 @@ function App() {
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'glass-header py-4' : 'py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-emerald to-accent-cobalt flex items-center justify-center">
-              <Box className="w-5 h-5 text-white" />
-            </div>
+          <div className="flex items-center gap-3">
+            <img 
+              src="/Isopod_logo.png" 
+              alt="Isopod Logo" 
+              className="w-10 h-10 object-contain drop-shadow-lg" 
+            />
             <span className="text-xl font-bold tracking-tight text-white">ISOPOD</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-secondary">
@@ -167,9 +169,9 @@ function App() {
           >
             <div className="absolute inset-0 bg-accent-emerald/20 blur-[120px] rounded-full" />
             <img 
-              src="/isopod.png" 
+              src="/Isopod_logo.png" 
               alt="Isopod Mascot" 
-              className="relative z-10 w-full max-w-md mx-auto drop-shadow-[0_20px_50px_rgba(52,211,153,0.3)]" 
+              className="relative z-10 w-full max-w-md mx-auto drop-shadow-[0_20px_60px_rgba(52,211,153,0.4)]" 
             />
           </motion.div>
         </div>
@@ -274,8 +276,8 @@ function App() {
       {/* Footer */}
       <footer className="py-12 px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-2">
-            <Box className="w-6 h-6 text-accent-emerald" />
+          <div className="flex items-center gap-3">
+            <img src="/Isopod_logo.png" alt="Isopod Logo" className="w-8 h-8 object-contain" />
             <span className="text-lg font-bold text-white">ISOPOD</span>
           </div>
           <div className="text-text-secondary text-sm">
