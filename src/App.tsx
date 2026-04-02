@@ -76,23 +76,23 @@ const GlassCard = ({ children, className = "" }: { children: React.ReactNode, cl
   </motion.div>
 )
 
+const terminalSequence = [
+  "[DOCKER] Pulling itzg/minecraft-server:latest...",
+  "[RESOLVER] Checking Modrinth for 'Fabric API'...",
+  "[RESOLVER] Resolved: Fabric API v0.92.0 (Direct Link)",
+  "[RESOLVER] Resolving dependencies: 4 mods found.",
+  "[ISOPOD] Creating container: isopod-survival-01",
+  "[SERVER] Loading properties...",
+  "[SERVER] Starting Minecraft server on port 25565",
+  "[RCON] Connected to localhost:25575",
+  "Welcome to Isopod Console. Type 'help' for commands.",
+]
+
 const MockTerminal = () => {
   const [lines, setLines] = useState<string[]>([
     "[SYSTEM] Initializing Isopod Core...",
   ])
   const scrollRef = useRef<HTMLDivElement>(null)
-
-  const terminalSequence = [
-    "[DOCKER] Pulling itzg/minecraft-server:latest...",
-    "[RESOLVER] Checking Modrinth for 'Fabric API'...",
-    "[RESOLVER] Resolved: Fabric API v0.92.0 (Direct Link)",
-    "[RESOLVER] Resolving dependencies: 4 mods found.",
-    "[ISOPOD] Creating container: isopod-survival-01",
-    "[SERVER] Loading properties...",
-    "[SERVER] Starting Minecraft server on port 25565",
-    "[RCON] Connected to localhost:25575",
-    "Welcome to Isopod Console. Type 'help' for commands.",
-  ]
 
   useEffect(() => {
     let i = 0
@@ -132,7 +132,11 @@ const MockTerminal = () => {
             className="mb-1"
           >
             <span className="text-accent-emerald mr-2">❯</span>
-            <span className={line.startsWith('[SERVER]') ? 'text-accent-emerald' : line.startsWith('[RESOLVER]') ? 'text-accent-cobalt' : 'text-text-primary'}>
+            <span className={
+              line?.startsWith('[SERVER]') ? 'text-accent-emerald' : 
+              line?.startsWith('[RESOLVER]') ? 'text-accent-cobalt' : 
+              'text-text-primary'
+            }>
               {line}
             </span>
           </motion.div>
