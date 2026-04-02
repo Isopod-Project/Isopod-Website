@@ -118,7 +118,7 @@ function App() {
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <img 
-              src="/Isopod_logo.png" 
+              src="Isopod_logo.png" 
               alt="Isopod Logo" 
               className="w-10 h-10 object-contain drop-shadow-lg" 
             />
@@ -169,7 +169,7 @@ function App() {
           >
             <div className="absolute inset-0 bg-accent-emerald/20 blur-[120px] rounded-full" />
             <img 
-              src="/Isopod_logo.png" 
+              src="Isopod_logo.png" 
               alt="Isopod Mascot" 
               className="relative z-10 w-full max-w-md mx-auto drop-shadow-[0_20px_60px_rgba(52,211,153,0.4)]" 
             />
@@ -277,7 +277,7 @@ function App() {
       <footer className="py-12 px-6 border-t border-white/5">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex items-center gap-3">
-            <img src="/Isopod_logo.png" alt="Isopod Logo" className="w-8 h-8 object-contain" />
+            <img src="Isopod_logo.png" alt="Isopod Logo" className="w-8 h-8 object-contain" />
             <span className="text-lg font-bold text-white">ISOPOD</span>
           </div>
           <div className="text-text-secondary text-sm">
