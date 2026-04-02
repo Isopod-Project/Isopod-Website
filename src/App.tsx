@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { 
   ExternalLink, 
@@ -11,8 +11,45 @@ import {
   Cpu,
   Globe,
   Database,
-  Box
+  Box,
+  AlertTriangle
 } from 'lucide-react'
+
+// --- Error Boundary ---
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("isopod_error_caught:", error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-[#1A1A1A] flex flex-col items-center justify-center p-6 text-center">
+          <AlertTriangle className="w-16 h-16 text-yellow-500 mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-2">Something went wrong</h1>
+          <p className="text-text-secondary mb-6">The interface encountered an error during rendering.</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-accent-emerald text-white rounded-lg font-bold shadow-lg shadow-accent-emerald/20 hover:scale-105 transition-transform"
+          >
+            Reload Page
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 
 // GitHub icon — lucide-react removed brand icons in v1
 const GitHubIcon = ({ className = '' }: { className?: string }) => (
@@ -106,8 +143,15 @@ function App() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20)
-    window.addEventListener('scroll', handleScroll)
+    let lastState = false
+    const handleScroll = () => {
+      const isScrolled = window.scrollY > 20
+      if (isScrolled !== lastState) {
+        setScrolled(isScrolled)
+        lastState = isScrolled
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -293,4 +337,10 @@ function App() {
   )
 }
 
-export default App
+export default function AppWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  )
+}
