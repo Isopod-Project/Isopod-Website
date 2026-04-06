@@ -12,7 +12,10 @@ import {
   Globe,
   Database,
   Box,
-  AlertTriangle
+  AlertTriangle,
+  Download,
+  Monitor,
+  ChevronRight
 } from 'lucide-react'
 
 // --- Error Boundary ---
@@ -154,6 +157,7 @@ const MockTerminal = () => {
 
 function App() {
   const [scrolled, setScrolled] = useState(false)
+  const [view, setView] = useState<'landing' | 'downloads'>('landing')
 
   useEffect(() => {
     let lastState = false
@@ -173,23 +177,41 @@ function App() {
       {/* Navbar */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'glass-header py-4' : 'py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setView('landing')}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <img 
               src="Isopod_logo.png" 
               alt="Isopod Logo" 
               className="w-10 h-10 object-contain drop-shadow-lg" 
             />
             <span className="text-xl font-bold tracking-tight text-white">ISOPOD</span>
-          </div>
+          </button>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-secondary">
-            <a href="#features" className="hover:text-accent-emerald transition-colors">Features</a>
-            <a href="#tech" className="hover:text-accent-emerald transition-colors">Stack</a>
+            {view === 'landing' ? (
+              <>
+                <a href="#features" className="hover:text-accent-emerald transition-colors">Features</a>
+                <a href="#tech" className="hover:text-accent-emerald transition-colors">Stack</a>
+              </>
+            ) : (
+              <button onClick={() => setView('landing')} className="hover:text-accent-emerald transition-colors">Home</button>
+            )}
+            <button 
+              onClick={() => setView('downloads')}
+              className={`px-4 py-2 rounded-lg transition-all ${view === 'downloads' ? 'bg-accent-emerald text-white' : 'hover:text-white'}`}
+            >
+              Download
+            </button>
             <a href="https://github.com" target="_blank" className="flex items-center gap-1 hover:text-white transition-colors">
               GitHub <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </div>
       </nav>
+
+      {view === 'landing' ? (
+        <>
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-6 overflow-hidden">
@@ -203,7 +225,7 @@ function App() {
               <Zap className="w-3 h-3" /> v1.0 Beta Now Available
             </div>
             <h1 className="text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
-              Minecraft Server Management Made, <span className="bg-gradient-to-r from-accent-emerald to-accent-cobalt bg-clip-text text-transparent">Easy.</span>
+              Minecraft Server Management Made <span className="bg-gradient-to-r from-accent-emerald to-accent-cobalt bg-clip-text text-transparent">Easy.</span>
             </h1>
             <p className="text-xl text-text-secondary mb-10 max-w-xl leading-relaxed">
               A modern, Docker-powered instance manager with smart mod resolution and real-time awareness. Deploy modded servers in seconds.
@@ -241,7 +263,7 @@ function App() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Core Shell Capabilities</h2>
-            <p className="text-text-secondary max-w-2xl mx-auto">Everything you need to run high-performance modded servers without the overhead.</p>
+            <p className="text-text-secondary max-w-2xl mx-auto">Everything you need to run high-performance modded servers with ease.</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -314,21 +336,85 @@ function App() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent-emerald/20 to-accent-cobalt/20" />
-        <div className="max-w-4xl mx-auto relative z-10 glass-card p-12 text-center border-accent-emerald/20">
-          <h2 className="text-4xl font-bold text-white mb-6">Ready to roll your own server?</h2>
-          <p className="text-text-secondary mb-10 text-lg">Join the Isopod beta and experience the next generation of Minecraft server management.</p>
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-12 py-5 rounded-2xl bg-white text-[#1A1A1A] font-bold text-lg shadow-2xl hover:shadow-accent-emerald/20 transition-all flex items-center justify-center gap-3 mx-auto"
-          >
-            <GitHubIcon className="w-6 h-6" /> Clone Repository
-          </motion.button>
+        </>
+      ) : (
+        /* Downloads Page */
+        <div className="pt-32 pb-24 px-6 animate-in fade-in duration-700">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4"
+              >
+                <Download className="w-3 h-3" /> Downloads
+              </motion.div>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6">Get Isopod Manager</h1>
+              <p className="text-text-secondary text-lg max-w-2xl mx-auto leading-relaxed">
+                Choose your platform and start managing your Minecraft instances with the power of Docker.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Windows Download */}
+              <GlassCard className="flex flex-col h-full border-accent-emerald/10">
+                <div className="w-14 h-14 rounded-2xl bg-accent-emerald/10 flex items-center justify-center mb-8 border border-accent-emerald/20">
+                  <Monitor className="w-8 h-8 text-accent-emerald" />
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-4">Windows</h2>
+                <div className="flex-grow">
+                  <p className="text-text-secondary mb-6 leading-relaxed">
+                    The full desktop experience for Windows users. Includes our intuitive GUI and background manager.
+                  </p>
+                  <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 mb-8 flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-yellow-500/90 leading-snug">
+                      <strong>Requirement:</strong> Need Docker Desktop downloaded and running to use Isopod.
+                    </p>
+                  </div>
+                </div>
+                <button className="w-full py-4 rounded-xl bg-accent-emerald text-[#0A1907] font-bold shadow-lg shadow-accent-emerald/20 hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
+                  <Download className="w-5 h-5" /> Download for Windows (.exe)
+                </button>
+              </GlassCard>
+
+              {/* Linux Download */}
+              <GlassCard className="flex flex-col h-full border-blue-500/10">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-8 border border-blue-500/20">
+                  <Terminal className="w-8 h-8 text-blue-400" />
+                </div>
+                <h2 className="text-3xl font-bold text-white mb-4">Linux</h2>
+                <div className="flex-grow">
+                  <p className="text-text-secondary mb-6 leading-relaxed">
+                    Optimized for server environments and advanced users. Available as an AppImage or manual script.
+                  </p>
+                  <ul className="space-y-3 mb-8">
+                    {['Ubuntu / Debian', 'Fedora / Arch', 'Generic AppImage'].map(distro => (
+                      <li key={distro} className="flex items-center gap-2 text-sm text-text-secondary">
+                        <ChevronRight className="w-4 h-4 text-accent-cobalt" /> {distro}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <button className="py-4 rounded-xl glass-card border border-white/10 text-white font-bold hover:bg-white/5 transition-all text-sm">
+                    .AppImage
+                  </button>
+                  <button className="py-4 rounded-xl bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-transform text-sm">
+                    .deb / .rpm
+                  </button>
+                </div>
+              </GlassCard>
+            </div>
+
+            <div className="mt-16 text-center">
+              <p className="text-text-secondary text-sm">
+                Looking for other versions? Check our <a href="https://github.com" className="text-white hover:text-accent-emerald underline decoration-accent-emerald/30 transition-colors">Releases page</a> on GitHub.
+              </p>
+            </div>
+          </div>
         </div>
-      </section>
+      )}
 
       {/* Footer */}
       <footer className="py-12 px-6 border-t border-white/5">
