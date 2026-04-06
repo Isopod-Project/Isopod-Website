@@ -76,23 +76,21 @@ const GlassCard = ({ children, className = "" }: { children: React.ReactNode, cl
   </motion.div>
 )
 
-const terminalSequence = [
-  "[DOCKER] Pulling itzg/minecraft-server:latest...",
-  "[RESOLVER] Checking Modrinth for 'Fabric API'...",
-  "[RESOLVER] Resolved: Fabric API v0.92.0 (Direct Link)",
-  "[RESOLVER] Resolving dependencies: 4 mods found.",
-  "[ISOPOD] Creating container: isopod-survival-01",
-  "[SERVER] Loading properties...",
-  "[SERVER] Starting Minecraft server on port 25565",
-  "[RCON] Connected to localhost:25575",
-  "Welcome to Isopod Console. Type 'help' for commands.",
-]
-
-const MockTerminal = () => {
-  const [lines, setLines] = useState<string[]>([
-    "[SYSTEM] Initializing Isopod Core...",
-  ])
-  const scrollRef = useRef<HTMLDivElement>(null)
+  const terminalSequence = [
+    "isopod_test0  | [18:03:09] [main/INFO]: Loaded 1515 recipes",
+    "isopod_test0  | [18:03:09] [main/INFO]: Loaded 1617 advancements",
+    "isopod_test0  | [18:03:09] [main/INFO]: Applied 0 biome modifications to 0 of 65 new biomes in 4.712 ms",
+    "isopod_test0  | [18:03:09] [Server thread/INFO]: Starting minecraft server version 26.1",
+    "isopod_test0  | [18:03:09] [Server thread/INFO]: Loading properties",
+    "isopod_test0  | [18:03:09] [Server thread/INFO]: Default game type: SURVIVAL",
+    "isopod_test0  | [18:03:09] [Server thread/INFO]: Generating keypair",
+    "isopod_test0  | [18:03:09] [Server thread/INFO]: Starting Minecraft server on *:25565",
+    "isopod_test0  | [18:03:09] [Server thread/INFO]: Preparing level \"world\"",
+    "isopod_test0  | [18:03:10] [Server thread/INFO]: Loading 0 persistent chunks...",
+    "isopod_test0  | [18:03:10] [Server thread/INFO]: Preparing spawn area: 100%",
+    "isopod_test0  | [18:03:10] [Server thread/INFO]: Time elapsed: 67 ms",
+    "isopod_test0  | [18:03:10] [Server thread/INFO]: Done (0.461s)! For help, type \"help\"",
+  ]
 
   useEffect(() => {
     let i = 0
@@ -201,7 +199,7 @@ function App() {
               <Zap className="w-3 h-3" /> v1.0 Beta Now Available
             </div>
             <h1 className="text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6">
-              Minecraft Management, <span className="bg-gradient-to-r from-accent-emerald to-accent-cobalt bg-clip-text text-transparent">Encapsulated.</span>
+              Minecraft Server Management Made, <span className="bg-gradient-to-r from-accent-emerald to-accent-cobalt bg-clip-text text-transparent">Easy.</span>
             </h1>
             <p className="text-xl text-text-secondary mb-10 max-w-xl leading-relaxed">
               A modern, Docker-powered instance manager with smart mod resolution and real-time awareness. Deploy modded servers in seconds.
