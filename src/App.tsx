@@ -76,11 +76,15 @@ const GlassCard = ({ children, className = "" }: { children: React.ReactNode, cl
   </motion.div>
 )
 
+const MockTerminal = () => {
+  const [lines, setLines] = useState<string[]>([])
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   const terminalSequence = [
     "isopod_test0  | [18:03:09] [main/INFO]: Loaded 1515 recipes",
     "isopod_test0  | [18:03:09] [main/INFO]: Loaded 1617 advancements",
     "isopod_test0  | [18:03:09] [main/INFO]: Applied 0 biome modifications to 0 of 65 new biomes in 4.712 ms",
-    "isopod_test0  | [18:03:09] [Server thread/INFO]: Starting minecraft server version 26.1",
+    "isopod_test0  | [18:03:09] [Server thread/INFO]: Starting minecraft server version 26.1.1",
     "isopod_test0  | [18:03:09] [Server thread/INFO]: Loading properties",
     "isopod_test0  | [18:03:09] [Server thread/INFO]: Default game type: SURVIVAL",
     "isopod_test0  | [18:03:09] [Server thread/INFO]: Generating keypair",
