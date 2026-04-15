@@ -16,6 +16,9 @@
   body {
     @apply bg-primary-bg text-text-primary antialiased;
   }
+  button {
+    @apply cursor-pointer;
+  }
 }
 
 @keyframes slideInFromTop {

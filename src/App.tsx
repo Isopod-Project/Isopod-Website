@@ -203,7 +203,7 @@ function App() {
             >
               Download
             </button>
-            <a href="https://github.com" target="_blank" className="flex items-center gap-1 hover:text-white transition-colors">
+            <a href="https://github.com/Isopod-Project/Isopod-Website" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
               GitHub <ExternalLink className="w-3 h-3" />
             </a>
           </div>
@@ -231,7 +231,7 @@ function App() {
               A modern, Docker-powered instance manager with smart mod resolution and real-time awareness. Deploy modded servers in seconds.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <a href="https://github.com" className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-br from-accent-emerald to-[#2DA44E] text-white font-bold shadow-lg shadow-accent-emerald/20 hover:scale-105 transition-transform">
+              <a href="https://github.com/Isopod-Project/Isopod-Website" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-br from-accent-emerald to-[#2DA44E] text-white font-bold shadow-lg shadow-accent-emerald/20 hover:scale-105 transition-transform">
                 <GitHubIcon className="w-5 h-5" /> Get Started on GitHub
               </a>
               <a href="#" className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl glass-card border border-white/10 text-white font-bold hover:bg-white/5 transition-all">
@@ -409,7 +409,7 @@ function App() {
 
             <div className="mt-16 text-center">
               <p className="text-text-secondary text-sm">
-                Looking for other versions? Check our <a href="https://github.com" className="text-white hover:text-accent-emerald underline decoration-accent-emerald/30 transition-colors">Releases page</a> on GitHub.
+                Looking for other versions? Check our <a href="https://github.com/Isopod-Project/Isopod-Website/releases" target="_blank" rel="noopener noreferrer" className="text-white hover:text-accent-emerald underline decoration-accent-emerald/30 transition-colors">Releases page</a> on GitHub.
               </p>
             </div>
           </div>
@@ -427,7 +427,7 @@ function App() {
             © 2026 Isopod Development Team. Built for the community.
           </div>
           <div className="flex gap-6">
-            <a href="#" className="text-text-secondary hover:text-white transition-colors"><GitHubIcon className="w-5 h-5" /></a>
+            <a href="https://github.com/Isopod-Project/Isopod-Website" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-white transition-colors"><GitHubIcon className="w-5 h-5" /></a>
             <a href="#" className="text-text-secondary hover:text-white transition-colors"><ExternalLink className="w-5 h-5" /></a>
           </div>
         </div>
