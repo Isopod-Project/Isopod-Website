@@ -53,7 +53,7 @@ To maintain consistency with the existing codebase:
 ### Section 2: Features (The "Core")
 Display as a 3-column grid of "Glass Cards":
 1. **Prism-Like UI**: Create separate, isolated instances in seconds.
-2. **Smart Mod Ops**: One-click Modrinth & CurseForge integration with dependency resolution.
+2. **Smart Mod Ops**: One-click Modrinth integration with dependency resolution.
 3. **Live Sync/RCON**: Real-time log streaming and interactive console inputs.
 4. **Docker Powered**: Portable, lightweight, and isolated from your host OS.
 
@@ -80,7 +80,7 @@ When generating the code, the Agent MUST follow these protocols:
 3. **RESPONSIVENESS**: Mobile-first grid layouts (`grid-cols-1 md:grid-cols-3`).
 4. **SEO OPTIMIZATION**:
     - Title: "Isopod - Modern Minecraft Server Management"
-    - Meta Description: "Manage modded Minecraft servers with ease using Isopod. Integrated Modrinth/CurseForge search, Docker isolation, and smart dependency resolution."
+    - Meta Description: "Manage modded Minecraft servers with ease using Isopod. Integrated Modrinth search, Docker isolation, and smart dependency resolution."
 5. **ACCESSIBILITY**: ARIA labels on all Lucide-icon-only buttons.
 6. **INTERACTIVE DEMO PREVIEW**: Create a simplified "Mock Terminal" component that mimics the real Isopod console animation.
 
