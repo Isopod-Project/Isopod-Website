@@ -11,7 +11,7 @@ Isopod is a modern, high-performance landing page for the Isopod Minecraft Serve
 The Isopod ecosystem is built to redefine how modded Minecraft servers are managed:
 
 *   **💎 Prism-Like UI**: A clean, intuitive dashboard for managing multiple isolated instances in seconds.
-*   **🔄 Smart Mod Ops**: Integrated Modrinth & CurseForge search with intelligent dependency resolution.
+*   **🔄 Smart Mod Ops**: Integrated Modrinth search with intelligent server-side dependency resolution.
 *   **💻 Live Sync / RCON**: Real-time log streaming and interactive terminal inputs for total control.
 *   **🐳 Docker Powered**: Every instance is portable, lightweight, and completely isolated from the host OS.
 

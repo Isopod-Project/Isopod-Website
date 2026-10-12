@@ -1,3 +1,4 @@
+import WikiPage from './WikiPage'
 import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -13,10 +14,11 @@ import {
   Database,
   Box,
   AlertTriangle,
+  Download,
   Monitor,
   ChevronRight,
-  Copy,
-  Check
+  Menu,
+  X
 } from 'lucide-react'
 
 // --- Error Boundary ---
@@ -79,47 +81,6 @@ const GlassCard = ({ children, className = "" }: { children: React.ReactNode, cl
     {children}
   </motion.div>
 )
-
-const CodeBlock = ({ code, filename }: { code: string, filename?: string }) => {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error('Failed to copy: ', err)
-    }
-  }
-
-  return (
-    <div className="w-full font-mono text-sm shadow-xl rounded-lg overflow-hidden border border-white/10 bg-[#0A0A0A] mb-4">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/5 bg-[#161616]">
-        <span className="text-text-secondary text-xs">{filename || "terminal"}</span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 px-2.5 py-1 text-xs rounded bg-white/5 hover:bg-white/10 text-text-primary hover:text-white transition-all border border-white/5"
-        >
-          {copied ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-accent-emerald" />
-              <span className="text-accent-emerald font-semibold">Copied</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-3.5 h-3.5" />
-              <span>Copy</span>
-            </>
-          )}
-        </button>
-      </div>
-      <pre className="p-4 overflow-x-auto text-text-primary leading-relaxed custom-scrollbar text-left">
-        <code>{code}</code>
-      </pre>
-    </div>
-  )
-}
 
 const MockTerminal = () => {
   const [lines, setLines] = useState<string[]>([])
@@ -197,9 +158,12 @@ const MockTerminal = () => {
   )
 }
 
+// WikiPage is imported from ./WikiPage
+
 function App() {
   const [scrolled, setScrolled] = useState(false)
-  const [view, setView] = useState<'landing' | 'install'>('landing')
+  const [view, setView] = useState<'landing' | 'downloads' | 'wiki'>('landing')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     let lastState = false
@@ -230,33 +194,108 @@ function App() {
             />
             <span className="text-xl font-bold tracking-tight text-white">ISOPOD</span>
           </button>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-text-secondary">
+            {view === 'landing' ? (
+              <>
+                <a href="#features" className="hover:text-accent-emerald transition-colors">Features</a>
+                <a href="#tech" className="hover:text-accent-emerald transition-colors">Stack</a>
+              </>
+            ) : (
+              <button onClick={() => setView('landing')} className="hover:text-accent-emerald transition-colors cursor-pointer">Home</button>
+            )}
             <button
-              onClick={() => setView('landing')}
-              className={`transition-colors duration-200 ${
-                view === 'landing' ? 'text-accent-emerald font-bold' : 'text-text-secondary hover:text-white'
-              }`}
+              onClick={() => setView('wiki')}
+              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${view === 'wiki' ? 'bg-accent-emerald/20 text-accent-emerald font-semibold border border-accent-emerald/30' : 'hover:text-white'}`}
             >
-              Home
+              Wiki
             </button>
             <button
-              onClick={() => setView('install')}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 ${
-                view === 'install'
-                  ? 'bg-accent-emerald text-[#0A1907] font-bold shadow-lg shadow-accent-emerald/20'
-                  : 'text-text-secondary hover:text-white hover:bg-white/5 border border-white/10'
-              }`}
+              onClick={() => setView('downloads')}
+              className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${view === 'downloads' ? 'bg-accent-emerald text-[#0A1907] font-bold shadow-lg shadow-accent-emerald/20' : 'hover:text-white'}`}
             >
-              Get Started
+              Download
             </button>
-            <a href="https://github.com/Tacoz234/Isopod" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-text-secondary hover:text-white transition-colors">
+            <a href="https://github.com/Isopod-Project/Isopod" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
               GitHub <ExternalLink className="w-3 h-3" />
             </a>
           </div>
+
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-text-secondary hover:text-white transition-colors cursor-pointer"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
       </nav>
 
-      {view === 'landing' ? (
+      {/* Mobile nav overlay */}
+      {mobileMenuOpen && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed inset-x-0 top-[72px] p-6 glass-header z-40 flex flex-col gap-4 md:hidden border-b border-white/10"
+        >
+          {view === 'landing' ? (
+            <>
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-text-secondary hover:text-white transition-colors text-lg py-2"
+              >
+                Features
+              </a>
+              <a
+                href="#tech"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-text-secondary hover:text-white transition-colors text-lg py-2"
+              >
+                Stack
+              </a>
+            </>
+          ) : (
+            <button
+              onClick={() => {
+                setView('landing');
+                setMobileMenuOpen(false);
+              }}
+              className="text-left text-text-secondary hover:text-white transition-colors text-lg py-2 cursor-pointer"
+            >
+              Home
+            </button>
+          )}
+          <button
+            onClick={() => {
+              setView('wiki');
+              setMobileMenuOpen(false);
+            }}
+            className={`text-left text-lg py-2 transition-all cursor-pointer ${view === 'wiki' ? 'text-accent-emerald font-bold' : 'text-text-secondary hover:text-white'}`}
+          >
+            Wiki
+          </button>
+          <button
+            onClick={() => {
+              setView('downloads');
+              setMobileMenuOpen(false);
+            }}
+            className={`text-left text-lg py-2 transition-all cursor-pointer ${view === 'downloads' ? 'text-accent-emerald font-bold' : 'text-text-secondary hover:text-white'}`}
+          >
+            Download
+          </button>
+          <a
+            href="https://github.com/Isopod-Project/Isopod"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-text-secondary hover:text-white transition-colors text-lg py-2"
+          >
+            GitHub <ExternalLink className="w-4 h-4" />
+          </a>
+        </motion.div>
+      )}
+
+      {view === 'landing' && (
         <>
 
           {/* Hero Section */}
@@ -277,11 +316,14 @@ function App() {
                   A modern, Docker-powered instance manager with smart mod resolution and real-time awareness. Deploy modded servers in seconds.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <a href="https://github.com/Tacoz234/Isopod" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-br from-accent-emerald to-[#2DA44E] text-white font-bold shadow-lg shadow-accent-emerald/20 hover:scale-105 transition-transform">
+                  <a href="https://github.com/Isopod-Project/Isopod" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-br from-accent-emerald to-[#2DA44E] text-white font-bold shadow-lg shadow-accent-emerald/20 hover:scale-105 transition-transform">
                     <GitHubIcon className="w-5 h-5" /> Get Started on GitHub
                   </a>
-                  <button onClick={() => setView('install')} className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl glass-card border border-white/10 text-white font-bold hover:bg-white/5 transition-all">
-                    <FileText className="w-5 h-5" /> View Setup Guide
+                  <button
+                    onClick={() => setView('wiki')}
+                    className="flex items-center justify-center gap-2 px-8 py-4 rounded-xl glass-card border border-white/10 text-white font-bold hover:bg-white/5 transition-all cursor-pointer"
+                  >
+                    <FileText className="w-5 h-5" /> View Documentation
                   </button>
                 </div>
               </motion.div>
@@ -326,7 +368,7 @@ function App() {
                     <RefreshCw className="w-6 h-6 text-accent-emerald" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-3">Smart Mod Ops</h3>
-                  <p className="text-text-secondary text-sm leading-relaxed">One-click Modrinth & CurseForge integration with intelligent dependency resolution.</p>
+                  <p className="text-text-secondary text-sm leading-relaxed">One-click Modrinth integration with intelligent server-side dependency resolution.</p>
                 </GlassCard>
 
                 <GlassCard>
@@ -383,8 +425,10 @@ function App() {
           </section>
 
         </>
-      ) : (
-        /* Install / Setup Page */
+      )}
+
+      {view === 'downloads' && (
+        /* Downloads Page */
         <div className="pt-32 pb-24 px-6 animate-in fade-in duration-700">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-16">
@@ -393,144 +437,77 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4"
               >
-                <Terminal className="w-3 h-3" /> Setup Guide
+                <Download className="w-3 h-3" /> Downloads
               </motion.div>
-              <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6">Install Isopod</h1>
+              <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6">Get Isopod Manager</h1>
               <p className="text-text-secondary text-lg max-w-2xl mx-auto leading-relaxed">
-                Isopod is Docker-powered, ensuring isolated, portable, and lightweight Minecraft server instances. Follow these steps to configure and deploy the management console.
+                Choose your platform and start managing your Minecraft instances with the power of Docker.
               </p>
             </div>
 
-            <div className="space-y-16">
-              {/* Step 1: Install Docker */}
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-sm font-bold">1</span>
-                  Install Docker &amp; Docker Compose
-                </h2>
-                <p className="text-text-secondary mb-8 max-w-3xl leading-relaxed">
-                  Isopod communicates with the Docker daemon to build, orchestrate, and run your isolated Minecraft server instances. Select your operating system below to install Docker Desktop or Docker Engine.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Windows Card */}
-                  <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener noreferrer" className="block group">
-                    <GlassCard className="h-full border-accent-emerald/15 hover:border-accent-emerald/40 transition-all">
-                      <div className="w-10 h-10 rounded-xl bg-accent-emerald/10 flex items-center justify-center mb-6 border border-accent-emerald/20">
-                        <Monitor className="w-5 h-5 text-accent-emerald" />
-                      </div>
-                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-accent-emerald transition-colors">Windows</h3>
-                      <p className="text-text-secondary text-sm leading-relaxed text-left">
-                        Download and run Docker Desktop for Windows. Enables hypervisor-based container isolation.
-                      </p>
-                    </GlassCard>
-                  </a>
-
-                  {/* macOS Card */}
-                  <a href="https://www.docker.com/products/docker-desktop/" target="_blank" rel="noopener noreferrer" className="block group">
-                    <GlassCard className="h-full border-accent-cobalt/15 hover:border-accent-cobalt/40 transition-all">
-                      <div className="w-10 h-10 rounded-xl bg-accent-cobalt/10 flex items-center justify-center mb-6 border border-accent-cobalt/20">
-                        <Cpu className="w-5 h-5 text-accent-cobalt" />
-                      </div>
-                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-accent-cobalt transition-colors">macOS</h3>
-                      <p className="text-text-secondary text-sm leading-relaxed text-left">
-                        Download Docker Desktop for Mac (compatible with both Apple Silicon and Intel chips).
-                      </p>
-                    </GlassCard>
-                  </a>
-
-                  {/* Linux Card */}
-                  <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer" className="block group">
-                    <GlassCard className="h-full border-purple-500/15 hover:border-purple-500/40 transition-all">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-6 border border-purple-500/20">
-                        <Terminal className="w-5 h-5 text-purple-400" />
-                      </div>
-                      <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">Linux</h3>
-                      <p className="text-text-secondary text-sm leading-relaxed text-left">
-                        Install Docker Engine and Docker Compose on Ubuntu, Debian, Fedora, Arch, or other distributions.
-                      </p>
-                    </GlassCard>
-                  </a>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Windows Download */}
+              <GlassCard className="flex flex-col h-full border-accent-emerald/10">
+                <div className="w-14 h-14 rounded-2xl bg-accent-emerald/10 flex items-center justify-center mb-8 border border-accent-emerald/20">
+                  <Monitor className="w-8 h-8 text-accent-emerald" />
                 </div>
-              </div>
-
-              {/* Step 2: Clone Repository */}
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-sm font-bold">2</span>
-                  Clone the Isopod Repository
-                </h2>
-                <p className="text-text-secondary mb-6 max-w-3xl leading-relaxed">
-                  Clone the project files to your local system to get the compose templates, assets, and service structures.
-                </p>
-                <CodeBlock
-                  code={`git clone https://github.com/Tacoz234/Isopod.git\ncd Isopod`}
-                  filename="shell"
-                />
-              </div>
-
-              {/* Step 3: Configure Compose */}
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-sm font-bold">3</span>
-                  Configure Docker Compose
-                </h2>
-                <p className="text-text-secondary mb-6 max-w-3xl leading-relaxed">
-                  Inspect and configure the volume mapping. Because Isopod manages containers on your behalf, we mount the local Docker socket.
-                </p>
-                <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 mb-6 flex items-start gap-3 max-w-3xl">
-                  <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="text-yellow-500 font-bold text-sm mb-1 text-left">Critical Volume Sync Rule</h4>
-                    <p className="text-sm text-yellow-500/90 leading-relaxed text-left">
-                      The host path and the internal container path in the volumes block (e.g. <code className="bg-yellow-500/20 px-1 py-0.5 rounded text-white font-mono">/DATA/AppData/isopod/servers</code>) <strong>must match exactly</strong>. This ensures any sub-containers spawned by Isopod can natively resolve path references on the host daemon.
+                <h2 className="text-3xl font-bold text-white mb-4">Windows</h2>
+                <div className="flex-grow">
+                  <p className="text-text-secondary mb-6 leading-relaxed">
+                    The full desktop experience for Windows users. Includes our intuitive GUI and background manager.
+                  </p>
+                  <div className="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/20 mb-8 flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-yellow-500/90 leading-snug">
+                      <strong>Requirement:</strong> Need Docker Desktop downloaded and running to use Isopod.
                     </p>
                   </div>
                 </div>
-                <CodeBlock
-                  code={`version: '3.8'\n\nservices:\n  isopod:\n    build: .\n    container_name: isopod\n    restart: unless-stopped\n    ports:\n      - "8000:8000"\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock\n      # Critical: Host and internal path must match perfectly\n      - /DATA/AppData/isopod/servers:/DATA/AppData/isopod/servers\n    environment:\n      - SERVERS_DIR=/DATA/AppData/isopod/servers`}
-                  filename="isopod-compose.yml"
-                />
-              </div>
+                <button className="w-full py-4 rounded-xl bg-accent-emerald text-[#0A1907] font-bold shadow-lg shadow-accent-emerald/20 hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
+                  <Download className="w-5 h-5" /> Download for Windows (.exe)
+                </button>
+              </GlassCard>
 
-              {/* Step 4: Launch and Access */}
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-sm font-bold">4</span>
-                  Deploy and Access Dashboard
-                </h2>
-                <p className="text-text-secondary mb-6 max-w-3xl leading-relaxed">
-                  Execute the docker compose command to build and launch Isopod in detached mode:
-                </p>
-                <CodeBlock
-                  code={`docker compose -f isopod-compose.yml up -d --build`}
-                  filename="shell"
-                />
-                <div className="mt-8 p-6 rounded-xl border border-white/5 bg-white/[0.02] flex flex-col md:flex-row items-center justify-between gap-6 max-w-3xl">
-                  <div className="text-left">
-                    <h4 className="text-white font-bold mb-1">Isopod Dashboard is Ready</h4>
-                    <p className="text-text-secondary text-sm leading-relaxed">
-                      Open the web management interface to begin importing mods and starting servers.
-                    </p>
-                  </div>
-                  <a
-                    href="http://localhost:8000"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-6 py-3 rounded-lg bg-accent-emerald hover:bg-accent-emerald/90 text-[#0A1907] font-bold transition-all shadow-lg shadow-accent-emerald/10 hover:scale-105"
-                  >
-                    Open Dashboard (Port 8000) <ChevronRight className="w-4 h-4" />
-                  </a>
+              {/* Linux Download */}
+              <GlassCard className="flex flex-col h-full border-blue-500/10">
+                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-8 border border-blue-500/20">
+                  <Terminal className="w-8 h-8 text-blue-400" />
                 </div>
-              </div>
+                <h2 className="text-3xl font-bold text-white mb-4">Linux</h2>
+                <div className="flex-grow">
+                  <p className="text-text-secondary mb-6 leading-relaxed">
+                    Optimized for server environments and advanced users. Available as an AppImage or manual script.
+                  </p>
+                  <ul className="space-y-3 mb-8">
+                    {['Ubuntu / Debian', 'Fedora / Arch', 'Generic AppImage'].map(distro => (
+                      <li key={distro} className="flex items-center gap-2 text-sm text-text-secondary">
+                        <ChevronRight className="w-4 h-4 text-accent-cobalt" /> {distro}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <button className="py-4 rounded-xl glass-card border border-white/10 text-white font-bold hover:bg-white/5 transition-all text-sm">
+                    .AppImage
+                  </button>
+                  <button className="py-4 rounded-xl bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-transform text-sm">
+                    .deb / .rpm
+                  </button>
+                </div>
+              </GlassCard>
             </div>
 
-            <div className="mt-20 text-center border-t border-white/5 pt-12">
+            <div className="mt-16 text-center">
               <p className="text-text-secondary text-sm">
-                Need help with configuration or docker permissions? Read the <a href="https://github.com/Tacoz234/Isopod/tree/main/documentation" target="_blank" rel="noopener noreferrer" className="text-white hover:text-accent-emerald underline decoration-accent-emerald/30 transition-colors">Documentation guides</a> on GitHub.
+                Looking for other versions? Check our <a href="https://github.com/Isopod-Project/Isopod/releases" target="_blank" rel="noopener noreferrer" className="text-white hover:text-accent-emerald underline decoration-accent-emerald/30 transition-colors">Releases page</a> on GitHub.
               </p>
             </div>
           </div>
         </div>
+      )}
+
+      {view === 'wiki' && (
+        <WikiPage />
       )}
 
       {/* Footer */}
@@ -544,7 +521,7 @@ function App() {
             © 2026 Isopod Development Team. Built for the community.
           </div>
           <div className="flex gap-6">
-            <a href="https://github.com/Tacoz234/Isopod" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-white transition-colors"><GitHubIcon className="w-5 h-5" /></a>
+            <a href="https://github.com/Isopod-Project/Isopod" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-white transition-colors"><GitHubIcon className="w-5 h-5" /></a>
             <a href="#" className="text-text-secondary hover:text-white transition-colors"><ExternalLink className="w-5 h-5" /></a>
           </div>
         </div>
