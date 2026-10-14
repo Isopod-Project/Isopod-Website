@@ -73,3 +73,8 @@
 .mesh-gradient {
   background-image: radial-gradient(circle at 50% 50%, #242424 0%, #1A1A1A 100%);
 }
+
+/* Keep deep-linked wiki sections clear of the fixed navbar */
+.prose [id] {
+  scroll-margin-top: 8rem;
+}

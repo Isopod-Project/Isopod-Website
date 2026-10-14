@@ -1,4 +1,5 @@
 import WikiPage from './WikiPage'
+import { navigate, useRoute, type View } from './route'
 import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -162,7 +163,8 @@ const MockTerminal = () => {
 
 function App() {
   const [scrolled, setScrolled] = useState(false)
-  const [view, setView] = useState<'landing' | 'downloads' | 'wiki'>('landing')
+  const { view } = useRoute()
+  const setView = (v: View) => navigate({ view: v })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {

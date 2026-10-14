@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { navigate, useRoute } from './route'
 import {
   Layers,
   Terminal,
@@ -126,7 +127,18 @@ const WikiTable = ({ headers, rows }: { headers: string[], rows: (string | React
 );
 
 export const WikiPage = () => {
-  const [activeArticleId, setActiveArticleId] = useState('about');
+  const route = useRoute();
+  const activeArticleId = route.articleId ?? 'about';
+  const setActiveArticleId = (id: string) => navigate({ view: 'wiki', articleId: id });
+
+  // Deep links (#/wiki/<article>/<section>) scroll to the section once the article renders
+  useEffect(() => {
+    if (!route.sectionId) return;
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(route.sectionId!)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [route.articleId, route.sectionId]);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
@@ -469,7 +481,7 @@ export const WikiPage = () => {
             Isopod makes provisioning new Minecraft servers fast and intuitive. Every server is an independent instance with dedicated storage, custom RAM limits, and unique port bindings.
           </p>
 
-          <h2 className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
+          <h2 id="create-instance" className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
             <PlusCircle className="w-6 h-6 text-accent-emerald" /> 1. Creating a New Instance
           </h2>
           <ol className="list-decimal pl-6 space-y-3 text-text-secondary mb-6">
@@ -518,7 +530,7 @@ export const WikiPage = () => {
             <li>Click <strong>Create</strong>. Isopod writes the container configuration, registers the instance, and initializes the directory structure.</li>
           </ol>
 
-          <h2 className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+          <h2 id="manage-instances" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Layers className="w-6 h-6 text-accent-cobalt" /> 2. Managing Existing Instances
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
@@ -530,6 +542,20 @@ export const WikiPage = () => {
             <li><strong>One-Click Power:</strong> Start, stop, or open the instance inspector panel.</li>
             <li><strong>Isolated Directory:</strong> All server files reside safely in <code>servers/&lt;instance_name&gt;/</code> on your host.</li>
           </ul>
+          <h2 id="import-modpacks" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Box className="w-6 h-6 text-accent-emerald" /> 3. Importing &amp; Modrinth Modpacks
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The <strong>New Instance</strong> window has three server types in its left sidebar:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Custom:</strong> Build a server from scratch by choosing a Minecraft version and loader.</li>
+            <li><strong>Import:</strong> Upload a <code>.zip</code> of an existing server. Isopod extracts it into a new instance and shows upload and extraction progress.</li>
+            <li><strong>Modrinth:</strong> Search Modrinth modpacks and pick a pack version. Keep <em>Show only server-side compatible modpacks</em> enabled to hide packs that can&apos;t run on a dedicated server. Client-only mods inside a pack are excluded automatically.</li>
+          </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Click the icon next to the instance name to choose a custom server icon. Modpack instances use the pack&apos;s icon by default.
+          </p>
         </div>
       )
     },
@@ -547,7 +573,7 @@ export const WikiPage = () => {
             Isopod connects directly to the <strong>Modrinth</strong> platform, giving you instant access to thousands of open-source Minecraft mods, plugins, and server optimization tools without leaving your browser.
           </p>
 
-          <h2 className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
+          <h2 id="installing-mods" className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
             <Zap className="w-6 h-6 text-accent-emerald" /> Intelligent Mod Installation
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
@@ -578,11 +604,23 @@ export const WikiPage = () => {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mt-10 mb-4">📦 Managing Installed Mods</h2>
+          <h2 id="managing-mods" className="text-2xl font-bold text-white mt-10 mb-4">📦 Managing Installed Mods</h2>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
             <li><strong>Enable / Disable:</strong> Temporarily toggle a mod off with a single click without deleting your configuration files (safely renames <code>.jar</code> to <code>.jar.disabled</code>).</li>
             <li><strong>One-Click Uninstall:</strong> Delete unwanted mods cleanly from the <code>mods/</code> directory.</li>
             <li><strong>Direct Jar Upload:</strong> Have a custom private mod? Drop your <code>.jar</code> directly into the instance's <code>mods/</code> folder or use the file uploader.</li>
+            <li><strong>Check for Updates:</strong> Scan installed Modrinth mods for newer versions compatible with your server&apos;s Minecraft version and loader.</li>
+          </ul>
+
+          <h2 id="resource-packs" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Layers className="w-6 h-6 text-accent-cobalt" /> Server Resource Packs
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The <strong>Resource Packs</strong> tab searches Modrinth for texture and asset packs. Every pack you select is bundled together and served to players automatically when they join.
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Requirement Policy:</strong> <em>Suggested</em> lets players decline the pack; <em>Required</em> makes accepting it a condition of joining.</li>
+            <li><strong>Bundle Install Message:</strong> The prompt players see when the server offers the pack.</li>
           </ul>
 
           <Alert type="tip">
@@ -605,7 +643,7 @@ export const WikiPage = () => {
             Fine-tune every aspect of your Minecraft server. Isopod provides an easy-to-use graphical editor for <code>server.properties</code> alongside container resource controls.
           </p>
 
-          <h2 className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
+          <h2 id="server-settings" className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
             <Settings className="w-6 h-6 text-accent-cobalt" /> Graphical Server Settings
           </h2>
           <WikiTable
@@ -623,7 +661,7 @@ export const WikiPage = () => {
             ]}
           />
 
-          <h2 className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+          <h2 id="memory" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Cpu className="w-6 h-6 text-accent-emerald" /> Memory & JVM Optimization
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
@@ -633,6 +671,16 @@ export const WikiPage = () => {
             <li><strong>Leave Host Headroom:</strong> Never allocate 100% of your computer's RAM to a Minecraft instance. Leave at least 2 GB free for the operating system and Docker engine.</li>
             <li><strong>Modpack Guidelines:</strong> Light vanilla/plugins: 2 - 4 GB. Heavy Fabric/Forge modpacks: 6 - 10 GB.</li>
           </ul>
+
+          <h2 id="raw-environment" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <FileCode className="w-6 h-6 text-yellow-400" /> Advanced: Raw Environment Variables
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The instance <strong>Configuration</strong> tab lists every environment variable passed to the server container (such as <code>MEMORY</code>, <code>TYPE</code>, and <code>VERSION</code>) and lets you edit their values directly.
+          </p>
+          <Alert type="warning">
+            Invalid values can stop the container from starting. Prefer the dedicated Versions, Loaders, and Mods tabs, and only edit raw variables when you know what they do.
+          </Alert>
 
           <Alert type="tip">
             Lowering <code>simulation-distance</code> from 10 to 6 can double your server's TPS (Ticks Per Second) with minimal noticeable difference to gameplay.
@@ -654,7 +702,7 @@ export const WikiPage = () => {
             Monitor live server events, catch error traces, and execute administrative in-game commands in real time directly from the Isopod console tab.
           </p>
 
-          <h2 className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
+          <h2 id="console" className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
             <Terminal className="w-6 h-6 text-yellow-400" /> Interactive RCON Console
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
@@ -672,7 +720,17 @@ export const WikiPage = () => {
             ]}
           />
 
-          <h2 className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+          <h2 id="log-controls" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Search className="w-6 h-6 text-accent-cobalt" /> Log Viewer Controls
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Keep updating:</strong> Stream new log lines live. Turn it off to freeze the view while you read.</li>
+            <li><strong>Wrap lines / Color lines:</strong> Toggle line wrapping and color highlighting for errors, warnings, commands, and player events.</li>
+            <li><strong>Copy / Clear / Refresh:</strong> Copy the whole log to your clipboard, clear the view, or re-fetch logs from the server.</li>
+            <li><strong>Search &amp; Find:</strong> Highlight matches and jump between them. <strong>Bottom</strong> scrolls back to the newest line.</li>
+          </ul>
+
+          <h2 id="power" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Play className="w-6 h-6 text-accent-emerald" /> Server Power Lifecycle
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
@@ -705,6 +763,202 @@ export const WikiPage = () => {
       )
     },
 
+    {
+      id: 'versions-loaders',
+      title: 'Versions & Mod Loaders',
+      category: 'Using the Dashboard',
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
+            <Box className="w-3.5 h-3.5" /> Server Software
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Versions &amp; Mod Loaders</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            Change the Minecraft version an instance runs and the loader that runs its mods, from the <strong>Versions</strong> and <strong>Loaders</strong> tabs of the instance editor.
+          </p>
+
+          <h2 id="versions" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Box className="w-6 h-6 text-accent-emerald" /> Changing the Minecraft Version
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The <strong>Versions</strong> tab lists the most recent releases from Mojang&apos;s official version manifest. Picking a new version opens a confirmation where you can:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Automatically update the mod loader</strong> to a build that supports the new version.</li>
+            <li><strong>Verify &amp; disable incompatible mods</strong>, so only mods with a matching release stay enabled.</li>
+          </ul>
+          <Alert type="warning">
+            Back up your world before changing versions. Worlds can be upgraded to newer versions but not safely downgraded.
+          </Alert>
+          <h2 id="loaders" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Cpu className="w-6 h-6 text-accent-cobalt" /> Choosing a Mod Loader
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The <strong>Loaders</strong> tab sets how Minecraft loads mods: Vanilla (no mods), Fabric, Forge, NeoForge, Quilt, or Paper for plugins. Pick a specific loader version, or leave it on <strong>Latest Recommended</strong>.
+          </p>
+          <Alert type="note">
+            Mods are built for one loader. Switching loaders (for example Fabric to Forge) will stop most existing mods from loading.
+          </Alert>
+        </div>
+      )
+    },
+    {
+      id: 'world-settings',
+      title: 'World Settings',
+      category: 'Using the Dashboard',
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
+            <Globe className="w-3.5 h-3.5" /> World Generation
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">World Settings</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            The <strong>World</strong> tab controls how your server&apos;s world is generated and played. Most changes need a server restart.
+          </p>
+
+          <h2 id="world-generation" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Globe className="w-6 h-6 text-accent-emerald" /> Generation &amp; Gameplay Options
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>World Seed:</strong> Determines terrain generation. Leave it blank for a random seed.</li>
+            <li><strong>Level Type:</strong> Default, Flat, Large Biomes, Amplified, or Buffet.</li>
+            <li><strong>Difficulty:</strong> Peaceful, Easy, Normal, or Hard.</li>
+            <li><strong>Game Mode:</strong> Survival, Creative, Adventure, or Spectator.</li>
+            <li><strong>Structures:</strong> Toggle generation of villages, temples, and other structures.</li>
+          </ul>
+          <Alert type="tip">
+            Seed and Level Type only apply when a world is first created. To regenerate with new settings, delete the <code>world</code> folder from the instance&apos;s Files tab, then restart the server.
+          </Alert>
+        </div>
+      )
+    },
+    {
+      id: 'players-access',
+      title: 'Players, Whitelist & Operators',
+      category: 'Using the Dashboard',
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
+            <Lock className="w-3.5 h-3.5" /> Access Control
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Players, Whitelist &amp; Operators</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            The <strong>Users</strong> tab manages who can join your server and what they are allowed to do, without typing console commands.
+          </p>
+
+          <h2 id="whitelist" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Lock className="w-6 h-6 text-accent-cobalt" /> Whitelist
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Whitelist toggle:</strong> When enabled, only players on the list who are marked active can join. When disabled, anyone can join.</li>
+            <li><strong>Add Player:</strong> Type a Minecraft username and press Enter (Tab autocompletes known players).</li>
+            <li><strong>Remove:</strong> Removes a player from the server&apos;s player list.</li>
+          </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            You can set a default whitelist for every new server under <strong>Settings &rarr; Server Defaults</strong>.
+          </p>
+          <h2 id="operators" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <ShieldCheck className="w-6 h-6 text-accent-emerald" /> Operator (OP) Levels
+          </h2>
+          <WikiTable
+            headers={['Level', 'Permissions']}
+            rows={[
+              ['Standard Player', 'No operator permissions.'],
+              ['Level 1', 'Bypass spawn protection.'],
+              ['Level 2', 'Cheat commands and command blocks.'],
+              ['Level 3', 'Kick, ban, and promote players.'],
+              ['Level 4', 'Full operator, including server management commands.']
+            ]}
+          />
+        </div>
+      )
+    },
+    {
+      id: 'file-manager',
+      title: 'File Manager',
+      category: 'Using the Dashboard',
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
+            <FileCode className="w-3.5 h-3.5" /> Server Files
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">File Manager</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            The <strong>Files</strong> tab is a full file browser for an instance&apos;s directory: configs, worlds, mods, and logs.
+          </p>
+
+          <h2 id="file-operations" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <FileCode className="w-6 h-6 text-accent-cobalt" /> Working with Files
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Upload:</strong> Drag files from your computer onto the browser, or use the upload button.</li>
+            <li><strong>Create:</strong> Make new files and folders from the toolbar or by right-clicking empty space.</li>
+            <li><strong>Edit:</strong> Open text files such as <code>server.properties</code> to edit them in place.</li>
+            <li><strong>Organize:</strong> Select items to cut, copy, paste, download, or delete. Drag items onto a folder or breadcrumb to move them.</li>
+            <li><strong>Right-click menu:</strong> Rename, delete, and other actions for the item under your cursor.</li>
+          </ul>
+          <Alert type="warning">
+            Stop the server before editing or deleting world files. Changing them while it runs can corrupt your world.
+          </Alert>
+        </div>
+      )
+    },
+    {
+      id: 'app-settings',
+      title: 'Dashboard Settings',
+      category: 'Using the Dashboard',
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
+            <Settings className="w-3.5 h-3.5" /> Application Settings
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Dashboard Settings</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            Open <strong>Settings</strong> from the dashboard header to configure Isopod itself, plus the defaults used for new servers.
+          </p>
+
+          <h2 id="general" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Monitor className="w-6 h-6 text-accent-cobalt" /> General
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Automatic Refresh:</strong> Update server statuses every 5 seconds.</li>
+            <li><strong>Show Snapshots:</strong> Include Minecraft snapshot versions in version lists.</li>
+          </ul>
+          <h2 id="language" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Globe className="w-6 h-6 text-accent-emerald" /> Language
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Choose the dashboard&apos;s interface language.
+          </p>
+          <h2 id="appearance" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Monitor className="w-6 h-6 text-accent-emerald" /> Appearance
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Switch between Dark Mode and Light Mode.
+          </p>
+          <h2 id="defaults" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Server className="w-6 h-6 text-accent-cobalt" /> Server Defaults
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Default Port Range Start:</strong> The first port offered to new servers.</li>
+            <li><strong>Default Mod Loader</strong> and <strong>Default RAM Allocation</strong> for new servers.</li>
+            <li><strong>Default Whitelist:</strong> Enable the whitelist for new servers and pre-fill its players.</li>
+          </ul>
+          <h2 id="updates" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <RefreshCw className="w-6 h-6 text-accent-emerald" /> Updates
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Compare your installed Isopod version with the latest release, read its release notes, and install updates. Isopod reconnects automatically once an update finishes.
+          </p>
+          <h2 id="advanced" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Lock className="w-6 h-6 text-yellow-400" /> Advanced
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Set the <strong>Docker Socket Path</strong> Isopod uses to manage server containers. Only change this if Docker runs at a non-standard location on your host.
+          </p>
+        </div>
+      )
+    },
     // ==========================================
     // NETWORKING & MULTIPLAYER
     // ==========================================
