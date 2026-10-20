@@ -856,7 +856,7 @@ export const WikiPage = () => {
             <li><strong>Backups to keep:</strong> Once there are more backups than this, the oldest are deleted.</li>
           </ul>
           <p className="text-text-secondary leading-relaxed mb-4">
-            Press <strong>Save Schedule</strong> to apply. Isopod checks every minute and backs up any instance whose newest backup is older than its frequency, so scheduled backups only run while Isopod itself is running.
+            Changes are saved as soon as you make them. Isopod checks every minute and backs up any instance whose newest backup is older than its frequency, so scheduled backups only run while Isopod itself is running.
           </p>
           <Alert type="tip">
             Backups are safe to take while the server is running. Isopod pauses world saving and flushes it to disk during the copy, then turns saving back on.
