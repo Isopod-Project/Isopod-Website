@@ -6,6 +6,7 @@ import {
   Terminal,
   ShieldCheck,
   RefreshCw,
+  Archive,
   Search,
   BookOpen,
   Copy,
@@ -833,6 +834,76 @@ export const WikiPage = () => {
       )
     },
     {
+      id: 'backups',
+      title: 'World Backups',
+      category: 'Using the Dashboard',
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
+            <Archive className="w-3.5 h-3.5" /> Backups
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">World Backups</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            The <strong>Backups</strong> tab in the instance editor saves copies of your server&apos;s worlds, either on a schedule or on demand, so a bad mod update, corruption, or griefing doesn&apos;t cost you progress.
+          </p>
+
+          <h2 id="schedule" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <RefreshCw className="w-6 h-6 text-accent-cobalt" /> Automatic Backups
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Automatic backups:</strong> Turn on scheduled backups for this instance.</li>
+            <li><strong>Frequency:</strong> Every hour, every 6 or 12 hours, daily, or weekly.</li>
+            <li><strong>Backups to keep:</strong> Once there are more backups than this, the oldest are deleted.</li>
+          </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Changes are saved as soon as you make them. Isopod checks every minute and backs up any instance whose newest backup is older than its frequency, so scheduled backups only run while Isopod itself is running.
+          </p>
+          <Alert type="tip">
+            Backups are safe to take while the server is running. Isopod pauses world saving and flushes it to disk during the copy, then turns saving back on.
+          </Alert>
+
+          <h2 id="manage" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Archive className="w-6 h-6 text-accent-emerald" /> Managing Backups
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Back Up Now:</strong> Create a backup immediately, for example before updating mods.</li>
+            <li><strong>Download:</strong> Save a backup&apos;s <code>.zip</code> to your computer.</li>
+            <li><strong>Restore:</strong> Revert the world to that backup. The current world folders are replaced.</li>
+            <li><strong>Delete:</strong> Permanently remove a backup.</li>
+          </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Each backup contains every world folder in the instance (any folder with a <code>level.dat</code>, such as <code>world</code>). Server settings, mods, and configs are not included; use <strong>Export</strong> on the dashboard for a full copy of an instance.
+          </p>
+
+          <h2 id="restore" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <RefreshCw className="w-6 h-6 text-accent-emerald" /> Restoring a Backup
+          </h2>
+          <ol className="list-decimal pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Stop the server. Restore is refused while it is running.</li>
+            <li>Optionally press <strong>Back Up Now</strong> so you can return to the current world later.</li>
+            <li>Press <strong>Restore</strong> on the backup you want and confirm.</li>
+            <li>Start the server again.</li>
+          </ol>
+          <Alert type="warning">
+            Restoring replaces the current world. Anything built since that backup is lost unless you back up first.
+          </Alert>
+
+          <h2 id="location" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Server className="w-6 h-6 text-accent-cobalt" /> Where Backups Are Stored
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            By default, backups are saved in a <code>backups</code> folder inside each instance. They are left out when an instance is exported or duplicated. The Backups tab shows the exact folder.
+          </p>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            To store them somewhere else, such as a separate drive, set <strong>Settings &rarr; General &rarr; Backup Folder</strong> to an absolute path. Each instance then gets its own subfolder there. Backups already made in the old location are not moved.
+          </p>
+          <Alert type="warning">
+            When Isopod runs in Docker, the path is inside the Isopod container. Mount the host folder into the container (for example <code>/mnt/backups:/backups</code> in your compose file) and use the container path, or backups will be lost when the container is recreated.
+          </Alert>
+        </div>
+      )
+    },
+    {
       id: 'players-access',
       title: 'Players, Whitelist & Operators',
       category: 'Using the Dashboard',
@@ -923,6 +994,7 @@ export const WikiPage = () => {
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
             <li><strong>Automatic Refresh:</strong> Update server statuses every 5 seconds.</li>
             <li><strong>Show Snapshots:</strong> Include Minecraft snapshot versions in version lists.</li>
+            <li><strong>Backup Folder:</strong> Where world backups are stored. Leave empty to keep them inside each instance. See <button onClick={() => setActiveArticleId('backups')} className="text-accent-emerald hover:underline font-semibold cursor-pointer">World Backups</button>.</li>
           </ul>
           <h2 id="language" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Globe className="w-6 h-6 text-accent-emerald" /> Language
