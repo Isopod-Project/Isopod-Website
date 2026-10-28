@@ -226,7 +226,7 @@ export const WikiPage = () => {
           />
 
           <Alert type="note">
-            Isopod leverages the battle-tested <strong>itzg/minecraft-server</strong> image, offering out-of-the-box compatibility with Vanilla, Fabric, Forge, NeoForge, Quilt, Paper, Purpur, and Folia.
+            Isopod leverages the battle-tested <strong>itzg/minecraft-server</strong> image, offering out-of-the-box compatibility with Vanilla, Fabric, Forge, NeoForge, Quilt, Paper, Purpur, and Folia. You can also create a server straight from a Modrinth or CurseForge modpack.
           </Alert>
         </div>
       )
@@ -397,6 +397,10 @@ export const WikiPage = () => {
             ]}
           />
 
+          <Alert type="note">
+            Want to create servers from <strong>CurseForge</strong> modpacks? CurseForge needs a free API key. Add <code>CURSEFORGE_API_KEY='your-key'</code> to a <code>.env</code> file next to <code>isopod-compose.yml</code> and run the launch command again. See <a href="#/wiki/dashboard-guide/curseforge-modpacks" className="text-accent-emerald hover:underline">CurseForge Modpacks</a> for the full steps.
+          </Alert>
+
           <Alert type="tip">
             Hosting Isopod on a dedicated home server or remote VPS? Access the dashboard using your server's local LAN address (e.g., <code>http://192.168.1.150:8000</code>).
           </Alert>
@@ -447,7 +451,9 @@ export const WikiPage = () => {
       - /var/run/docker.sock:/var/run/docker.sock
       - /DATA/AppData/isopod/servers:/DATA/AppData/isopod/servers
     environment:
-      - SECURE_KEY=replace_with_a_secure_random_key`} language="yaml" />
+      - SECURE_KEY=replace_with_a_secure_random_key
+      # Optional: needed for CurseForge modpacks. Write every $ in the key as $$
+      - CURSEFORGE_API_KEY=`} language="yaml" />
 
           <h2 className="text-2xl font-bold text-white mt-8 mb-4">3. Volume Mount Details</h2>
           <WikiTable
@@ -457,6 +463,10 @@ export const WikiPage = () => {
               ['/DATA/AppData/isopod/servers', '/DATA/AppData/isopod/servers', 'Persists all Minecraft world directories, configs, and mod files safely on your CasaOS storage.']
             ]}
           />
+
+          <Alert type="note">
+            <code>CURSEFORGE_API_KEY</code> is only needed for CurseForge modpacks. Get a free key at <a href="https://console.curseforge.com" target="_blank" rel="noopener noreferrer" className="text-accent-emerald hover:underline">console.curseforge.com</a>. Docker Compose treats <code>$</code> as the start of a variable, and CurseForge keys contain several, so write each <code>$</code> in the key as <code>$$</code> when you paste it into the YAML.
+          </Alert>
 
           <Alert type="warning">
             Always change <code>replace_with_a_secure_random_key</code> to a long, random alphanumeric passphrase. This secures session authorization for instance administration.
@@ -544,19 +554,61 @@ export const WikiPage = () => {
             <li><strong>Isolated Directory:</strong> All server files reside safely in <code>servers/&lt;instance_name&gt;/</code> on your host.</li>
           </ul>
           <h2 id="import-modpacks" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
-            <Box className="w-6 h-6 text-accent-emerald" /> 3. Importing &amp; Modrinth Modpacks
+            <Box className="w-6 h-6 text-accent-emerald" /> 3. Importing &amp; Modpacks
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
-            The <strong>New Instance</strong> window has three server types in its left sidebar:
+            The <strong>New Instance</strong> window has four server types in its left sidebar:
           </p>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
             <li><strong>Custom:</strong> Build a server from scratch by choosing a Minecraft version and loader.</li>
             <li><strong>Import:</strong> Upload a <code>.zip</code> of an existing server. Isopod extracts it into a new instance and shows upload and extraction progress.</li>
             <li><strong>Modrinth:</strong> Search Modrinth modpacks and pick a pack version. Keep <em>Show only server-side compatible modpacks</em> enabled to hide packs that can&apos;t run on a dedicated server. Client-only mods inside a pack are excluded automatically.</li>
+            <li><strong>CurseForge:</strong> Search CurseForge modpacks and pick a pack version. This needs a free API key, see <a href="#/wiki/dashboard-guide/curseforge-modpacks" className="text-accent-emerald hover:underline">CurseForge Modpacks</a> below.</li>
           </ul>
           <p className="text-text-secondary leading-relaxed mb-4">
             Click the icon next to the instance name to choose a custom server icon. Modpack instances use the pack&apos;s icon by default.
           </p>
+
+          <h2 id="curseforge-modpacks" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Box className="w-6 h-6 text-orange-400" /> 4. CurseForge Modpacks
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Isopod can create a server from any CurseForge modpack. CurseForge only serves its API to apps that have a key, so you set one up once.
+          </p>
+          <ol className="list-decimal pl-6 space-y-3 text-text-secondary mb-6">
+            <li>
+              <strong>Get a key.</strong> Sign in at <a href="https://console.curseforge.com" target="_blank" rel="noopener noreferrer" className="text-accent-emerald hover:underline">console.curseforge.com</a> and create an API key. It is free.
+            </li>
+            <li>
+              <strong>Give it to Isopod.</strong> Add it to the <code>.env</code> file in the root of your Isopod clone. Put the key in single quotes, because CurseForge keys contain <code>$</code> characters:
+              <CodeBlock code="CURSEFORGE_API_KEY='your-key-here'" language="env" />
+              On macOS, add it to the same <code>.env</code> that holds <code>COMPOSE_FILE</code>. On CasaOS, add <code>CURSEFORGE_API_KEY</code> as an environment variable instead.
+            </li>
+            <li>
+              <strong>Restart Isopod</strong> so it picks the key up:
+              <CodeBlock code="docker compose -f isopod-compose.yml up -d" language="bash" />
+            </li>
+            <li>
+              <strong>Create the server.</strong> Click <strong>Add Instance</strong>, open the <strong>CurseForge</strong> tab, search for a pack, and click it. The newest release is selected for you, or pick another version from the list. Name the server, continue, and start it.
+            </li>
+          </ol>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The first start downloads the pack and all of its mods, so it can take several minutes. Follow it in the <strong>Logs</strong> tab. The Minecraft version, loader, and Java version all come from the pack, and well-known client-only mods (shaders, minimaps, menu mods, and similar) are skipped so they do not crash the server.
+          </p>
+          <WikiTable
+            headers={['Problem', 'What it means']}
+            rows={[
+              ['"Couldn\'t load modpacks" with CURSEFORGE_API_KEY is not set', 'The key never reached Isopod. Check the .env file and restart Isopod.'],
+              ['"Couldn\'t load modpacks" with a 403', 'CurseForge rejected the key. Check that you copied all of it, or create a new one.'],
+              ['The server stops while installing the pack', 'Some pack authors block downloads outside the CurseForge app, so Isopod cannot install them. The server log names the mod that failed.']
+            ]}
+          />
+          <Alert type="note">
+            CurseForge support covers <strong>modpacks</strong>. The Mods and Resource Packs tabs still search Modrinth only.
+          </Alert>
+          <Alert type="warning">
+            Keep your key private. Isopod only sends it to <code>api.curseforge.com</code> and passes it to the server container as an environment variable. It is not written to the instance&apos;s <code>docker-compose.yml</code>.
+          </Alert>
         </div>
       )
     },
@@ -624,6 +676,10 @@ export const WikiPage = () => {
             <li><strong>Bundle Install Message:</strong> The prompt players see when the server offers the pack.</li>
           </ul>
 
+          <Alert type="note">
+            The Mods and Resource Packs tabs search Modrinth only. You can still create a server from a <strong>CurseForge</strong> modpack when you add an instance, see <a href="#/wiki/dashboard-guide/curseforge-modpacks" className="text-accent-emerald hover:underline">CurseForge Modpacks</a>.
+          </Alert>
+
           <Alert type="tip">
             Running a Fabric server? Always install <strong>Fabric API</strong> first, as nearly all Fabric content and performance mods depend on it.
           </Alert>
@@ -670,7 +726,7 @@ export const WikiPage = () => {
           </p>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
             <li><strong>Leave Host Headroom:</strong> Never allocate 100% of your computer's RAM to a Minecraft instance. Leave at least 2 GB free for the operating system and Docker engine.</li>
-            <li><strong>Modpack Guidelines:</strong> Light vanilla/plugins: 2 - 4 GB. Heavy Fabric/Forge modpacks: 6 - 10 GB.</li>
+            <li><strong>Modpack Guidelines:</strong> Light vanilla/plugins: 2 - 4 GB. Heavy Fabric/Forge modpacks: 6 - 10 GB. Big Modrinth and CurseForge packs with hundreds of mods belong at the top of that range. If a pack runs out of memory, raise <code>MEMORY</code> in the instance Configuration tab.</li>
           </ul>
 
           <h2 id="raw-environment" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
@@ -1284,6 +1340,10 @@ export const WikiPage = () => {
           <Alert type="tip">
             The frontend dev server proxies API calls on <code>/api</code> directly to <code>http://localhost:8000</code>.
           </Alert>
+
+          <Alert type="note">
+            To work on CurseForge modpacks, put <code>CURSEFORGE_API_KEY=&apos;your-key&apos;</code> in a <code>.env</code> file in the repository root (in single quotes, keys contain <code>$</code>). Both dev compose files pass it into the container, and the backend reads it when you run it directly.
+          </Alert>
         </div>
       )
     },
@@ -1305,7 +1365,7 @@ export const WikiPage = () => {
           <WikiTable
             headers={['Directory', 'Purpose']}
             rows={[
-              ['backend/', 'Python source code running FastAPI routes, Modrinth proxy, Docker SDK wrappers, and RCON manager.'],
+              ['backend/', 'Python source code running FastAPI routes, Modrinth and CurseForge API clients, Docker SDK wrappers, and RCON manager.'],
               ['frontend/', 'React 19 + TypeScript + Tailwind CSS dashboard client files.'],
               ['docker/', 'Dockerfiles (production & dev) and development Compose stacks.'],
               ['documentation/', 'Project documentation and technical guides.'],
@@ -1316,7 +1376,7 @@ export const WikiPage = () => {
 
           <h2 className="text-2xl font-bold text-white mt-10 mb-4">Engineering Standards</h2>
           <ul className="list-disc pl-6 space-y-3 text-text-secondary mb-6">
-            <li><strong>Mod Provider Policy:</strong> Modrinth is the sole official mod repository integration. with full server-side dependency resolution.</li>
+            <li><strong>Mod Provider Policy:</strong> Modrinth is the official mod repository integration, with full server-side dependency resolution. CurseForge is supported for modpacks only, through its official API with a user-supplied key. Send the key per request and only to <code>api.curseforge.com</code>.</li>
             <li><strong>Clean Root Directory:</strong> Do not commit temporary test files, local virtual environments, or scratch scripts to the root directory.</li>
             <li><strong>Strict Typing:</strong> All new frontend components must feature comprehensive TypeScript interfaces.</li>
             <li><strong>Docstring Integrity:</strong> Backend Python functions and route handlers must preserve clear docstrings detailing parameter schemas.</li>
