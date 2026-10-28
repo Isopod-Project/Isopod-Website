@@ -1,28 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="Isopod_logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Isopod - Modern Minecraft Server Management</title>
     <meta name="description" content="Manage modded Minecraft servers with ease using Isopod. Integrated Modrinth search, Docker isolation, and smart dependency resolution." />
+    <meta name="theme-color" content="#1A1A1A" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#F1F5F9" media="(prefers-color-scheme: light)" />
+    <!-- Resolve the theme before first paint so there is no flash (see src/theme.ts) -->
+    <script>
+      (function () {
+        var pref = 'system';
+        try { pref = localStorage.getItem('isopod-theme') || 'system'; } catch (e) {}
+        var light = pref === 'light' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: light)').matches);
+        document.documentElement.setAttribute('data-theme', light ? 'light' : 'dark');
+      })();
+    </script>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-      :root {
-        background-color: #1A1A1A;
-        color-scheme: dark;
-      }
-      body {
-        margin: 0;
-        background-color: #1A1A1A;
-        font-family: 'Inter', system-ui, sans-serif;
-      }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-[#1A1A1A] antialiased">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

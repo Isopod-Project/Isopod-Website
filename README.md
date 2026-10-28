@@ -20,10 +20,12 @@ The Isopod ecosystem is built to redefine how modded Minecraft servers are manag
 The landing page reflects the same modern stack used in the core application:
 
 *   **Frontend**: React 18 + TypeScript
-*   **Styling**: Tailwind CSS (Glassmorphism & Motion)
+*   **Styling**: Tailwind CSS v4 with shared design tokens (light & dark)
 *   **Animations**: Framer Motion
 *   **Icons**: Lucide React
 *   **Bundler**: Vite
+
+Design tokens and shared components are documented in [DESIGN.md](DESIGN.md).
 
 ---
 

@@ -7,26 +7,9 @@
 
 ## 🎨 1. THE ISOPOD AESTHETIC (Design System)
 
-The website must feel like a premium, developer-centric tool. It should mirror the **Isopod Dashboard**'s dark, interactive, and glassmorphic UI.
+The website must feel like the **Isopod Dashboard**: charcoal surfaces, cobalt (`#3E8ED0`) as the primary accent, emerald for success states, and light + dark themes.
 
-### 🌑 Core Color Palette
-- **Primary Background**: `#1A1A1A` (Deepest Charcoal - for sections)
-- **Secondary Background**: `#242424` (Main Isopod background)
-- **Surface/Card Color**: `#323232` (Subtle elevation)
-- **Accent - Emerald**: `#34D399` (Emerald-400) - Primary interactions & success states.
-- **Accent - Cobalt**: `#3E8ED0` (Isopod Blue) - Secondary highlights & links.
-- **Text Primary**: `#E0E0E0` (Soft White)
-- **Text Secondary**: `#A1A1AA` (Zinc-400)
-
-### 💎 Design Language (Glassmorphism)
-- **Blur**: Use `backdrop-blur-md` for headers and floating elements.
-- **Borders**: Hairline borders (`border border-white/5` or `border border-[#4A4A4A]`).
-- **Gradients**: Subtle radial gradients for background sections (`radial-gradient(circle at 50% 50%, #242424 0%, #1A1A1A 100%)`).
-
-### ✨ Motion & Micro-interactions
-- **Entry**: `animate-in` (defined as `slideInFromTop` + `fadeIn`).
-- **Hover**: Smooth transitions (`0.3s ease-out`). Scale effects on buttons (1.05x).
-- **Interactive Elements**: Use Lucide icons for all UI metaphors.
+Colors, type, spacing, radius, and shared components are defined in **[DESIGN.md](DESIGN.md)**. Use those tokens and components; don't add one-off colors or styles.
 
 ---
 
