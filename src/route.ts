@@ -24,10 +24,17 @@ export const parseRoute = (hash = window.location.hash): Route => {
 const routeHash = ({ view, articleId, sectionId }: Route) =>
   view === 'landing' ? '' : '#/' + [view, articleId, sectionId].filter(Boolean).join('/')
 
-export const navigate = (route: Route) => {
+// href for a route, so route links are real links (open in new tab, copy link)
+export const routeHref = (route: Route) => {
   const { pathname, search } = window.location
-  window.history.pushState(null, '', `${pathname}${search}${routeHash(route)}`)
+  return `${pathname}${search}${routeHash(route)}`
+}
+
+export const navigate = (route: Route) => {
+  window.history.pushState(null, '', routeHref(route))
   window.dispatchEvent(new Event(ROUTE_CHANGE))
+  // Section links scroll themselves into view (see WikiPage); everything else starts at the top
+  if (!route.sectionId) window.scrollTo({ top: 0 })
 }
 
 export const useRoute = () => {

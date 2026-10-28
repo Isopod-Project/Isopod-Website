@@ -1,80 +1,280 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary-bg: #1A1A1A;
-  --color-secondary-bg: #242424;
-  --color-surface-card: #323232;
-  --color-accent-emerald: #34D399;
-  --color-accent-cobalt: #3E8ED0;
-  --color-text-primary: #E0E0E0;
-  --color-text-secondary: #A1A1AA;
+/* Theme follows data-theme on <html>, set before first paint by the script in index.html */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-  --font-sans: "Inter", system-ui, sans-serif;
+/* ==========================================================================
+   Design tokens (documented in DESIGN.md)
+   Values follow the Isopod dashboard: charcoal surfaces, cobalt (#3E8ED0) as
+   the primary accent, emerald for success/online states.
+   Dark is the default; [data-theme="light"] overrides.
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+
+  --canvas: #1A1A1A;          /* page background */
+  --surface: #242424;         /* cards, sidebar, panels */
+  --surface-raised: #2D2D2D;  /* hover / nested surfaces */
+  --inset: #141414;           /* code blocks, inputs, terminal */
+  --border: #333333;
+  --border-strong: #444444;
+
+  --fg: #E0E0E0;              /* body text */
+  --fg-strong: #FFFFFF;       /* headings, emphasis */
+  --fg-muted: #A1A1AA;        /* secondary text */
+
+  --accent: #3E8ED0;          /* cobalt: borders, rings, fills */
+  --accent-fg: #6AAEE6;       /* cobalt text on dark surfaces */
+  --accent-solid: #2E78B7;    /* button fill under white text */
+  --accent-solid-hover: #2B6A9E;
+  --on-accent: #FFFFFF;
+
+  --success: #34D399;
+  --warn: #FACC15;
+  --danger: #F87171;
+
+  --header-bg: rgb(26 26 26 / 0.85);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  --canvas: #F1F5F9;
+  --surface: #FFFFFF;
+  --surface-raised: #F8FAFC;
+  --inset: #F8FAFC;
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+
+  --fg: #334155;
+  --fg-strong: #0F172A;
+  --fg-muted: #475569;
+
+  --accent-fg: #2B6A9E;
+
+  --success: #047857;
+  --warn: #854D0E;
+  --danger: #B91C1C;
+
+  --header-bg: rgb(255 255 255 / 0.85);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-inset: var(--inset);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-strong: var(--fg-strong);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-solid: var(--accent-solid);
+  --color-accent-solid-hover: var(--accent-solid-hover);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-header: var(--header-bg);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 @layer base {
-  body {
-    @apply bg-primary-bg text-text-primary antialiased;
+  html {
+    scroll-padding-top: 5rem; /* clear the fixed header for in-page anchors */
   }
-  button {
-    @apply cursor-pointer;
+  body {
+    @apply bg-canvas text-fg font-sans antialiased;
+  }
+  ::selection {
+    @apply bg-accent/30 text-fg-strong;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-@keyframes slideInFromTop {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
+/* ==========================================================================
+   Components
+   ========================================================================== */
+@layer components {
+  /* Layout */
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  .page {
+    @apply pt-28 pb-20 sm:pt-32 sm:pb-24;
+  }
+
+  /* Type */
+  .text-display {
+    @apply text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-fg-strong;
+  }
+  .text-title {
+    @apply text-3xl sm:text-4xl font-extrabold tracking-tight text-fg-strong;
+  }
+  .text-heading {
+    @apply text-2xl font-bold tracking-tight text-fg-strong;
+  }
+  .lead {
+    @apply text-lg leading-relaxed text-fg-muted;
+  }
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent to-success bg-clip-text text-transparent;
+  }
+  .link {
+    @apply font-medium text-accent-fg underline decoration-accent/40 underline-offset-2 hover:decoration-accent;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50;
+  }
+  .btn-lg {
+    @apply px-6 py-3 text-base;
+  }
+  .btn-primary {
+    @apply bg-accent-solid text-on-accent hover:bg-accent-solid-hover;
+  }
+  .btn-secondary {
+    @apply border border-border-strong bg-surface text-fg-strong hover:bg-surface-raised;
+  }
+  .btn-ghost {
+    @apply text-fg-muted hover:bg-surface-raised hover:text-fg-strong;
+  }
+  .btn-icon {
+    @apply p-2;
+  }
+
+  /* Surfaces */
+  .card {
+    @apply rounded-xl border border-border bg-surface p-6;
+  }
+  .card-compact {
+    @apply rounded-xl border border-border bg-surface p-4;
+  }
+  .card-interactive {
+    @apply transition-colors hover:border-accent/50;
+  }
+
+  /* Badges: tone classes set the color, .badge the shape */
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold;
+    @apply border-border bg-surface-raised text-fg;
+  }
+  .badge-accent { @apply border-accent/30 bg-accent/10 text-accent-fg; }
+  .badge-success { @apply border-success/30 bg-success/10 text-success; }
+  .badge-warn { @apply border-warn/30 bg-warn/10 text-warn; }
+  .badge-danger { @apply border-danger/30 bg-danger/10 text-danger; }
+
+  /* Square icon holder used on feature cards */
+  .icon-tile {
+    @apply flex h-12 w-12 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent-fg;
+  }
+
+  /* Numbered step marker */
+  .step-num {
+    @apply inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent/10 text-xs font-bold text-accent-fg;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-border bg-inset px-3 py-2 text-sm text-fg-strong placeholder:text-fg-muted transition-colors focus:border-accent focus:outline-none;
+  }
+
+  /* ------------------------------------------------------------------------
+     Prose: typography for wiki articles. Bare elements inside .prose are
+     styled here, so article markup needs no per-element classes.
+     ------------------------------------------------------------------------ */
+  .prose {
+    @apply text-base leading-relaxed text-fg;
+  }
+  .prose h1 {
+    @apply mb-4 text-3xl sm:text-4xl font-extrabold tracking-tight text-fg-strong;
+  }
+  .prose h2 {
+    @apply mt-10 mb-4 text-2xl font-bold tracking-tight text-fg-strong;
+  }
+  .prose h3 {
+    @apply mt-8 mb-3 text-lg font-bold text-fg-strong;
+  }
+  .prose h4 {
+    @apply mt-4 mb-2 text-sm font-bold text-fg-strong;
+  }
+  .prose :is(h2, h3, h4):has(> svg, > .step-num) {
+    @apply flex items-center gap-2.5;
+  }
+  .prose :is(h2, h3, h4) > svg {
+    @apply h-6 w-6 flex-shrink-0 text-accent-fg;
+  }
+  .prose :is(h3, h4) > svg {
+    @apply h-5 w-5;
+  }
+  .prose p {
+    @apply mb-4;
+  }
+  .prose .lead {
+    @apply mb-6;
+  }
+  .prose :is(ul, ol) {
+    @apply mb-6 space-y-2 pl-6;
+  }
+  .prose ul { @apply list-disc; }
+  .prose ol { @apply list-decimal; }
+  .prose li::marker {
+    @apply text-fg-muted;
+  }
+  .prose strong {
+    @apply font-semibold text-fg-strong;
+  }
+  .prose a:not(.btn, .badge) {
+    @apply font-medium text-accent-fg underline decoration-accent/40 underline-offset-2 hover:decoration-accent;
+  }
+  .prose :not(pre) > code {
+    @apply rounded border border-border bg-inset px-1.5 py-0.5 font-mono text-[0.875em] text-fg-strong;
+  }
+  .prose [id] {
+    scroll-margin-top: 6rem;
+  }
+  /* Cards inside articles: tighter type, no stray margins */
+  .prose :is(.card, .card-compact) {
+    @apply my-6 text-sm;
+  }
+  .prose :is(.card, .card-compact) > :first-child {
+    @apply mt-0;
+  }
+  .prose :is(.card, .card-compact) > :last-child,
+  .prose :is(.card, .card-compact) li > :last-child {
+    @apply mb-0;
+  }
+  .prose :is(.grid, .steps) > :is(.card, .card-compact) {
+    @apply my-0;
+  }
+  .prose .steps {
+    @apply my-8 space-y-6;
+  }
+  .prose .badge-row {
+    @apply mt-2 flex flex-wrap gap-2;
   }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-in {
-  animation: slideInFromTop 0.6s ease-out forwards, fadeIn 0.6s ease-out forwards;
-}
-
-/* Glassmorphism Utilities */
-.glass-card {
-  background: rgba(50, 50, 50, 0.3);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
-}
-
-.glass-card-hover {
-  transition: all 0.3s ease-out;
-}
-
-.glass-card-hover:hover {
-  background: rgba(60, 60, 60, 0.4);
-  transform: translateY(-4px);
-  border-color: rgba(52, 211, 153, 0.2);
-}
-
-.glass-header {
-  background: rgba(26, 26, 26, 0.8);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Mesh Background */
-.mesh-gradient {
-  background-image: radial-gradient(circle at 50% 50%, #242424 0%, #1A1A1A 100%);
-}
-
-/* Keep deep-linked wiki sections clear of the fixed navbar */
-.prose [id] {
-  scroll-margin-top: 8rem;
+  animation: fadeIn 0.4s ease-out both;
 }
