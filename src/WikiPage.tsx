@@ -127,9 +127,37 @@ const WikiTable = ({ headers, rows }: { headers: string[], rows: (string | React
   </div>
 );
 
+interface WikiSection {
+  id: string
+  title: string
+}
+
+// Every article follows the same layout: what it is, how to use or set it up, then troubleshooting.
+// Section ids are linked from the dashboard's help buttons, so never rename or remove one.
+interface WikiArticle {
+  id: string
+  title: string
+  category: string
+  summary: string
+  sections: WikiSection[]
+  content: () => React.ReactNode
+}
+
+const CATEGORIES = [
+  'Getting Started',
+  'Servers',
+  'Mods & Players',
+  'Worlds & Files',
+  'Dashboard',
+  'Networking & Multiplayer',
+  'Development'
+];
+
+const matches = (text: string, q: string) => text.toLowerCase().includes(q);
+
 export const WikiPage = () => {
   const route = useRoute();
-  const activeArticleId = route.articleId ?? 'about';
+  const activeArticleId = route.articleId ?? 'index';
   const setActiveArticleId = (id: string) => navigate({ view: 'wiki', articleId: id });
 
   // Deep links (#/wiki/<article>/<section>) scroll to the section once the article renders
@@ -142,28 +170,65 @@ export const WikiPage = () => {
   }, [route.articleId, route.sectionId]);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    'Getting Started': true,
-    'Using the Dashboard': true,
-    'Networking & Multiplayer': true,
-    'Development': true
-  });
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories(prev => ({
       ...prev,
-      [cat]: !prev[cat]
+      [cat]: !(prev[cat] ?? true)
     }));
   };
 
-  const articles = [
+  const articles: WikiArticle[] = [
     // ==========================================
     // GETTING STARTED
     // ==========================================
     {
+      id: 'index',
+      title: 'All Articles',
+      category: 'Getting Started',
+      summary: "Every wiki article and section on one page.",
+      sections: [],
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
+            <BookOpen className="w-3.5 h-3.5" /> Wiki Index
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Isopod Wiki</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            Everything you need to install Isopod and run Minecraft servers with it. New here? Start with the <button onClick={() => setActiveArticleId('getting-started')} className="text-accent-emerald hover:underline font-semibold cursor-pointer">Quick Start Guide</button>. Looking for something specific? Use the search box, which also searches every section below.
+          </p>
+          {CATEGORIES.map(cat => (
+            <div key={cat} className="mt-10">
+              <h2 className="text-2xl font-bold text-white mb-4">{cat}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {articles.filter(a => a.category === cat && a.id !== 'index').map(a => (
+                  <div key={a.id} className="p-5 rounded-xl border border-white/5 bg-[#161616]">
+                    <button onClick={() => setActiveArticleId(a.id)} className="font-bold text-white hover:text-accent-emerald text-left cursor-pointer">{a.title}</button>
+                    <p className="text-text-secondary text-xs leading-relaxed mt-1 mb-2">{a.summary}</p>
+                    {a.sections.length > 0 && (
+                      <ul className="space-y-0.5">
+                        {a.sections.map(sec => (
+                          <li key={sec.id}>
+                            <a href={`#/wiki/${a.id}/${sec.id}`} className="text-xs text-accent-emerald/80 hover:text-accent-emerald hover:underline">{sec.title}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
       id: 'about',
       title: 'About Isopod',
       category: 'Getting Started',
+      summary: "What Isopod is, what it can run, and the hardware it needs.",
+      sections: [{ id: 'requirements', title: 'System Requirements' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
@@ -209,7 +274,7 @@ export const WikiPage = () => {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mt-10 mb-4">🖥️ System Requirements</h2>
+          <h2 id="requirements" className="text-2xl font-bold text-white mt-10 mb-4">🖥️ System Requirements</h2>
           <p className="text-text-secondary leading-relaxed mb-4">
             Isopod runs on standard x86-64 and ARM64 servers and PCs. Below are recommended hardware specifications:
           </p>
@@ -226,7 +291,7 @@ export const WikiPage = () => {
           />
 
           <Alert type="note">
-            Isopod leverages the battle-tested <strong>itzg/minecraft-server</strong> image, offering out-of-the-box compatibility with Vanilla, Fabric, Forge, NeoForge, Quilt, Paper, Purpur, and Folia. You can also create a server straight from a Modrinth or CurseForge modpack.
+            Isopod leverages the battle-tested <strong>itzg/minecraft-server</strong> image, offering out-of-the-box compatibility with Vanilla, Fabric, Forge, NeoForge, Quilt, Paper, Purpur, and Folia. It also runs Mojang&apos;s <strong>Bedrock Dedicated Server</strong> for phone, console, and Windows players, see <a href="#/wiki/bedrock" className="text-accent-emerald hover:underline">Bedrock Edition &amp; Cross-play</a>. You can also create a server straight from a Modrinth or CurseForge modpack.
           </Alert>
         </div>
       )
@@ -235,6 +300,8 @@ export const WikiPage = () => {
       id: 'install-docker',
       title: 'Installing Docker & Prerequisites',
       category: 'Getting Started',
+      summary: "Install Docker and Docker Compose on Windows, Linux, macOS, or CasaOS.",
+      sections: [{ id: 'windows', title: 'Windows' }, { id: 'linux', title: 'Linux' }, { id: 'macos-docker', title: 'macOS' }, { id: 'casaos-docker', title: 'CasaOS' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
@@ -247,7 +314,7 @@ export const WikiPage = () => {
 
           {/* Windows Section */}
           <div className="p-6 rounded-2xl border border-white/5 bg-[#161616] mb-8">
-            <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
+            <h2 id="windows" className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
               <Monitor className="w-6 h-6 text-accent-cobalt" /> Windows 10 & 11 (WSL 2 Backend)
             </h2>
             <p className="text-text-secondary text-sm leading-relaxed mb-4">
@@ -278,7 +345,7 @@ export const WikiPage = () => {
 
           {/* Linux Section */}
           <div className="p-6 rounded-2xl border border-white/5 bg-[#161616] mb-8">
-            <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
+            <h2 id="linux" className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
               <Terminal className="w-6 h-6 text-accent-emerald" /> Linux (Ubuntu, Debian, Fedora, Arch)
             </h2>
             <p className="text-text-secondary text-sm leading-relaxed mb-4">
@@ -307,7 +374,7 @@ export const WikiPage = () => {
 
           {/* macOS Section */}
           <div className="p-6 rounded-2xl border border-white/5 bg-[#161616] mb-8">
-            <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
+            <h2 id="macos-docker" className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
               <Cpu className="w-6 h-6 text-purple-400" /> macOS (Apple Silicon & Intel)
             </h2>
             <p className="text-text-secondary text-sm leading-relaxed mb-4">
@@ -318,11 +385,14 @@ export const WikiPage = () => {
               <li>Drag <strong>Docker.app</strong> into your Applications folder and launch it.</li>
               <li>In Docker Desktop Settings &rarr; <em>Resources</em>, allocate at least <strong>4 GB - 6 GB</strong> of memory to allow server instances adequate RAM.</li>
             </ol>
+            <p className="text-text-secondary text-sm leading-relaxed">
+              Isopod needs one extra setup step on a Mac. See <a href="#/wiki/getting-started/macos" className="text-accent-emerald hover:underline">Running on macOS</a>.
+            </p>
           </div>
 
           {/* CasaOS Section */}
           <div className="p-6 rounded-2xl border border-white/5 bg-[#161616] mb-8">
-            <h2 className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
+            <h2 id="casaos-docker" className="text-2xl font-bold text-white mb-3 flex items-center gap-3">
               <Server className="w-6 h-6 text-yellow-400" /> CasaOS / Home NAS
             </h2>
             <p className="text-text-secondary text-sm leading-relaxed">
@@ -336,6 +406,8 @@ export const WikiPage = () => {
       id: 'getting-started',
       title: 'Quick Start Guide',
       category: 'Getting Started',
+      summary: "Clone Isopod, start it with Docker Compose, and open the dashboard. Includes macOS and Windows steps.",
+      sections: [{ id: 'install', title: 'Install & Launch' }, { id: 'macos', title: 'Running on macOS' }, { id: 'windows', title: 'Windows Start Script' }, { id: 'lifecycle', title: 'Lifecycle Commands' }, { id: 'security', title: 'Keep the Dashboard Private' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
@@ -346,6 +418,7 @@ export const WikiPage = () => {
             Get your Isopod manager up and running in just a few minutes. Follow these simple steps to deploy your local instance manager.
           </p>
 
+          <h2 id="install" className="text-2xl font-bold text-white mt-8 mb-4">Install &amp; Launch</h2>
           <div className="space-y-8 my-8">
             <div className="p-6 rounded-2xl border border-white/5 bg-[#161616]">
               <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-3">
@@ -364,9 +437,12 @@ export const WikiPage = () => {
                 Launch the Stack with Docker Compose
               </h3>
               <p className="text-text-secondary text-sm mb-3">
-                Start the application containers in detached mode. This command will build the frontend assets, compile the backend, and link your local Docker socket:
+                Start Isopod in the background. The first run builds the image, which takes a few minutes:
               </p>
               <CodeBlock code="docker compose -f isopod-compose.yml up -d --build" language="bash" />
+              <p className="text-text-secondary text-sm mt-3">
+                On a Mac, do the one-time <a href="#/wiki/getting-started/macos" className="text-accent-emerald hover:underline">macOS setup</a> first. On Windows you can use the <a href="#/wiki/getting-started/windows" className="text-accent-emerald hover:underline">start script</a> instead.
+              </p>
             </div>
 
             <div className="p-6 rounded-2xl border border-white/5 bg-[#161616]">
@@ -386,7 +462,29 @@ export const WikiPage = () => {
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold text-white mt-10 mb-4">🔧 Lifecycle Management Commands</h2>
+          <h2 id="macos" className="text-2xl font-bold text-white mt-10 mb-4">🍎 Running on macOS</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            <code>isopod-compose.yml</code> stores data under <code>/DATA/AppData/isopod</code>, a CasaOS path that doesn&apos;t exist on a Mac, so starting it as-is fails with <code>mounts denied</code>. The overlay file <code>docker/isopod-compose.macos.yml</code> swaps in Mac-friendly locations. Create a <code>.env</code> file in the root of your clone once so Docker Compose always loads it:
+          </p>
+          <CodeBlock code={`echo "COMPOSE_FILE=isopod-compose.yml:docker/isopod-compose.macos.yml" > .env`} language="bash" />
+          <p className="text-text-secondary leading-relaxed mb-4">
+            From then on, run plain <code>docker compose</code> commands without any <code>-f</code> flags:
+          </p>
+          <CodeBlock code={`docker compose up -d --build   # start or update\ndocker compose down            # stop\ndocker compose logs -f         # watch logs`} language="bash" />
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Servers and worlds are stored in <code>data/servers</code> inside your clone. Keep the clone under your home folder, or add its location in Docker Desktop under <strong>Settings &rarr; Resources &rarr; File sharing</strong>.
+          </p>
+          <Alert type="warning">
+            Don&apos;t add <code>-f isopod-compose.yml</code> on a Mac. Any <code>-f</code> flag makes Docker Compose ignore the <code>.env</code> setting and skip the overlay, and the start fails with <code>mounts denied</code>.
+          </Alert>
+
+          <h2 id="windows" className="text-2xl font-bold text-white mt-10 mb-4">🪟 Windows Start Script</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            On Windows, this script runs the same launch command, waits for the dashboard to come up, and opens it in your default browser:
+          </p>
+          <CodeBlock code={`.\\scripts\\start-isopod.ps1`} language="powershell" />
+
+          <h2 id="lifecycle" className="text-2xl font-bold text-white mt-10 mb-4">🔧 Lifecycle Management Commands</h2>
           <WikiTable
             headers={['Action', 'Command', 'Description']}
             rows={[
@@ -404,6 +502,11 @@ export const WikiPage = () => {
           <Alert type="tip">
             Hosting Isopod on a dedicated home server or remote VPS? Access the dashboard using your server's local LAN address (e.g., <code>http://192.168.1.150:8000</code>).
           </Alert>
+
+          <h2 id="security" className="text-2xl font-bold text-white mt-10 mb-4">🔒 Keep the Dashboard Private</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The dashboard has no login yet, and the Isopod container runs privileged so it can run its own Docker engine. Anyone who can open port <code>8000</code> can control your servers. Keep it on your local network or behind a VPN such as <a href="#/wiki/tunneling-alternatives" className="text-accent-emerald hover:underline">Tailscale</a>, and only forward your Minecraft ports.
+          </p>
         </div>
       )
     },
@@ -411,6 +514,8 @@ export const WikiPage = () => {
       id: 'casaos-install',
       title: 'Installing on CasaOS',
       category: 'Getting Started',
+      summary: "Install Isopod as an app on a CasaOS home server.",
+      sections: [{ id: 'build', title: 'Build the Image' }, { id: 'install', title: 'Install via CasaOS' }, { id: 'settings', title: 'Settings Explained' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-semibold mb-4">
@@ -421,13 +526,13 @@ export const WikiPage = () => {
             CasaOS is an elegant home cloud system dashboard. This guide walks you through importing and deploying Isopod as a native dashboard web application.
           </p>
 
-          <h2 className="text-2xl font-bold text-white mt-8 mb-4">1. Build the Docker Image</h2>
+          <h2 id="build" className="text-2xl font-bold text-white mt-8 mb-4">1. Build the Docker Image</h2>
           <p className="text-text-secondary leading-relaxed mb-4">
             Connect to your CasaOS server via SSH or the built-in terminal, clone the repository, and build the Docker image locally:
           </p>
           <CodeBlock code={`git clone https://github.com/Isopod-Project/Isopod.git\ncd Isopod\ndocker build -t isopod:latest .`} language="bash" />
 
-          <h2 className="text-2xl font-bold text-white mt-8 mb-4">2. Install via CasaOS Dashboard</h2>
+          <h2 id="install" className="text-2xl font-bold text-white mt-8 mb-4">2. Install via CasaOS Dashboard</h2>
           <p className="text-text-secondary leading-relaxed mb-4">
             Follow these steps to import the container into CasaOS:
           </p>
@@ -436,31 +541,47 @@ export const WikiPage = () => {
             <li>Click on the <strong>App Store</strong> icon.</li>
             <li>Click <strong>Custom Install</strong> in the top-right corner.</li>
             <li>Click the <strong>Import</strong> icon (represented by the <code>[→]</code> symbol in the upper header).</li>
-            <li>Paste the following Docker Compose specification and click <strong>Submit</strong>:</li>
+            <li>Paste the following Docker Compose specification and click <strong>Submit</strong>.</li>
+            <li>For the icon URL, replace what CasaOS fills in with <code>https://raw.githubusercontent.com/Isopod-Project/Isopod-Website/main/public/Isopod_logo.png</code>, then click <strong>Install</strong>.</li>
           </ol>
 
-          <CodeBlock code={`services:
+          <CodeBlock code={`name: isopod
+
+services:
   isopod:
     image: isopod:latest
     container_name: isopod
+    privileged: true
     restart: unless-stopped
     network_mode: bridge
     ports:
       - "8000:8000"
+      - "25565-25585:25565-25585"
+      # Bedrock servers and Java cross-play (Geyser) use UDP
+      - "19132-19152:19132-19152/udp"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /DATA/AppData/isopod/servers:/DATA/AppData/isopod/servers
+      - /DATA/AppData/isopod/servers:/servers
+      - /DATA/AppData/isopod/docker:/var/lib/docker
     environment:
-      - SECURE_KEY=replace_with_a_secure_random_key
+      - SERVERS_DIR=/servers
       # Optional: needed for CurseForge modpacks. Write every $ in the key as $$
       - CURSEFORGE_API_KEY=`} language="yaml" />
 
-          <h2 className="text-2xl font-bold text-white mt-8 mb-4">3. Volume Mount Details</h2>
+          <h2 id="settings" className="text-2xl font-bold text-white mt-8 mb-4">3. Settings Explained</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            If you fill out the CasaOS form by hand instead, use these values:
+          </p>
           <WikiTable
-            headers={['Host Path', 'Container Path', 'Explanation']}
+            headers={['Setting', 'Value', 'Why']}
             rows={[
-              ['/var/run/docker.sock', '/var/run/docker.sock', 'Grants Isopod permission to spin up and control Minecraft server containers.'],
-              ['/DATA/AppData/isopod/servers', '/DATA/AppData/isopod/servers', 'Persists all Minecraft world directories, configs, and mod files safely on your CasaOS storage.']
+              ['Privileged Mode', 'Enabled', 'Isopod runs its own Docker engine inside the container to run each Minecraft server.'],
+              ['Web UI Port', '8000 → 8000', 'The dashboard.'],
+              ['Game Server Ports (TCP)', '25565-25585 → 25565-25585', 'Java servers. Allows up to 21 servers at once.'],
+              ['Bedrock Ports (UDP)', '19132-19152 → 19132-19152', 'Bedrock servers and Java servers with Bedrock cross-play.'],
+              ['/DATA/AppData/isopod/servers', '/servers', 'Your servers, worlds, mods, and backups.'],
+              ['/DATA/AppData/isopod/docker', '/var/lib/docker', 'Downloaded server images, so they are not downloaded again after a restart.'],
+              ['SERVERS_DIR', '/servers', 'Tells Isopod where the servers volume is mounted.'],
+              ['CURSEFORGE_API_KEY', 'Optional', 'Needed for CurseForge modpacks.']
             ]}
           />
 
@@ -468,8 +589,12 @@ export const WikiPage = () => {
             <code>CURSEFORGE_API_KEY</code> is only needed for CurseForge modpacks. Get a free key at <a href="https://console.curseforge.com" target="_blank" rel="noopener noreferrer" className="text-accent-emerald hover:underline">console.curseforge.com</a>. Docker Compose treats <code>$</code> as the start of a variable, and CurseForge keys contain several, so write each <code>$</code> in the key as <code>$$</code> when you paste it into the YAML.
           </Alert>
 
+          <Alert type="tip">
+            Isopod no longer mounts the host&apos;s <code>/var/run/docker.sock</code>. Older installs that did showed every Minecraft server as a separate &quot;Legacy app&quot; on the CasaOS home screen. With this compose file, only Isopod itself appears.
+          </Alert>
+
           <Alert type="warning">
-            Always change <code>replace_with_a_secure_random_key</code> to a long, random alphanumeric passphrase. This secures session authorization for instance administration.
+            Installed Isopod before Bedrock support? Add <code>19132-19152:19132-19152/udp</code> to the ports, or Bedrock players can&apos;t connect.
           </Alert>
         </div>
       )
@@ -481,7 +606,9 @@ export const WikiPage = () => {
     {
       id: 'dashboard-guide',
       title: 'Creating & Managing Instances',
-      category: 'Using the Dashboard',
+      category: 'Servers',
+      summary: "Create servers, organize them in groups, and use the side panel and right-click menu.",
+      sections: [{ id: 'create-instance', title: 'Creating a New Instance' }, { id: 'manage-instances', title: 'Managing Existing Instances' }, { id: 'import-modpacks', title: 'Importing & Modpacks' }, { id: 'curseforge-modpacks', title: 'CurseForge Modpacks' }, { id: 'groups', title: 'Groups' }, { id: 'context-menu', title: 'Right-Click Menu' }, { id: 'saving', title: 'Saving in the Edit Window' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
@@ -496,7 +623,7 @@ export const WikiPage = () => {
             <PlusCircle className="w-6 h-6 text-accent-emerald" /> 1. Creating a New Instance
           </h2>
           <ol className="list-decimal pl-6 space-y-3 text-text-secondary mb-6">
-            <li>Click the <strong>&quot;New Instance&quot;</strong> button in the top-right header of your Isopod dashboard.</li>
+            <li>Click <strong>Add Instance</strong> in the dashboard header.</li>
             <li>
               <strong>Instance Name:</strong> Provide a human-friendly label (e.g. <code>Fabric SMP 1.20.4</code> or <code>Paper Lobby</code>).
             </li>
@@ -530,28 +657,47 @@ export const WikiPage = () => {
                   <div className="font-bold text-white text-sm text-blue-400">Folia</div>
                   <div className="text-xs text-text-secondary">Multi-threaded regional server engine for massive multi-player communities.</div>
                 </div>
+                <div className="p-3 rounded-xl border border-white/5 bg-[#161616]">
+                  <div className="font-bold text-white text-sm text-orange-400">Bedrock</div>
+                  <div className="text-xs text-text-secondary">Mojang&apos;s Bedrock Dedicated Server for phone, console, and Windows players. See <a href="#/wiki/bedrock" className="text-accent-emerald hover:underline">Bedrock Edition</a>.</div>
+                </div>
               </div>
+              <p className="text-xs text-text-secondary mt-2">See <a href="#/wiki/versions-loaders/loaders" className="text-accent-emerald hover:underline">Choosing a Server Type</a> for how they differ.</p>
             </li>
             <li className="mt-2">
               <strong>Memory Slider:</strong> Allocate how much host RAM should be dedicated to this server (e.g. 2 GB, 4 GB, 8 GB).
             </li>
             <li>
-              <strong>Server Port:</strong> Default is <code>25565</code>. If you are creating a second server, assign an available port like <code>25566</code>.
+              <strong>Server Port:</strong> Default is <code>25565</code>. If you are creating a second server, assign an available port like <code>25566</code>. Isopod publishes ports <code>25565</code>-<code>25585</code>, so stay in that range.
             </li>
-            <li>Click <strong>Create</strong>. Isopod writes the container configuration, registers the instance, and initializes the directory structure.</li>
+            <li>
+              <strong>Group (optional):</strong> File the new server under an existing group, or pick <strong>+ New Group...</strong> to make one. See <a href="#/wiki/dashboard-guide/groups" className="text-accent-emerald hover:underline">Groups</a>.
+            </li>
+            <li>Click <strong>Create</strong>. Isopod writes the container configuration, registers the instance, and selects it so you can start it right away. If creation fails (for example, the port is taken), the error says why.</li>
           </ol>
 
           <h2 id="manage-instances" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Layers className="w-6 h-6 text-accent-cobalt" /> 2. Managing Existing Instances
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
-            On the main dashboard, each instance card provides real-time information:
+            On the main dashboard, each instance tile provides real-time information:
           </p>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
-            <li><strong>Status Indicator:</strong> Shows whether the server is <span className="text-text-secondary font-bold">Stopped</span>, <span className="text-yellow-400 font-bold">Starting</span>, or <span className="text-accent-emerald font-bold">Online</span>.</li>
-            <li><strong>Port & Memory:</strong> Quick glance at active port bindings and allocated RAM.</li>
-            <li><strong>One-Click Power:</strong> Start, stop, or open the instance inspector panel.</li>
+            <li><strong>Status Indicator:</strong> Shows whether the server is <span className="text-text-secondary font-bold">Stopped</span>, <span className="text-yellow-400 font-bold">Starting</span>, <span className="text-accent-emerald font-bold">Online</span>, or <span className="text-sky-400 font-bold">Sleeping</span> (see <a href="#/wiki/server-tuning/sleep" className="text-accent-emerald hover:underline">Sleep When Empty</a>). A red badge means it <a href="#/wiki/crashes" className="text-accent-emerald hover:underline">crashed</a>.</li>
+            <li><strong>Players &amp; RAM:</strong> Running servers show how many players are online and how much RAM they use.</li>
             <li><strong>Isolated Directory:</strong> All server files reside safely in <code>servers/&lt;instance_name&gt;/</code> on your host.</li>
+          </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Click a tile to select it. The side panel on the right then shows:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Address:</strong> The address players join with. Click it to copy it. Servers with Bedrock players also show a <strong>Bedrock</strong> address (UDP).</li>
+            <li><strong>Launch / Stop / Kill:</strong> Stop saves the world first. Kill asks for confirmation, then powers the server off at once; only use it when the server is stuck. While a server starts or stops, a progress bar shows how far along it is.</li>
+            <li><strong>Update to &lt;version&gt;:</strong> Appears when a newer Minecraft release is out. See <a href="#/wiki/versions-loaders/update-world" className="text-accent-emerald hover:underline">Update World Button</a>.</li>
+            <li><strong>Version</strong> and <strong>Last Activity</strong>.</li>
+            <li><strong>CPU and RAM</strong> while the server runs. See <a href="#/wiki/monitoring/resource-usage" className="text-accent-emerald hover:underline">Resource Usage</a>.</li>
+            <li><strong>Players:</strong> Who is online, with quick actions. See <a href="#/wiki/players-access/online-players" className="text-accent-emerald hover:underline">Online Players</a>.</li>
+            <li><strong>Crash</strong> and <strong>snapshot</strong> cards when something needs your attention. See <a href="#/wiki/crashes" className="text-accent-emerald hover:underline">Crashes &amp; Auto-Restart</a> and <a href="#/wiki/backups/snapshots" className="text-accent-emerald hover:underline">Pre-update Snapshots</a>.</li>
           </ul>
           <h2 id="import-modpacks" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Box className="w-6 h-6 text-accent-emerald" /> 3. Importing &amp; Modpacks
@@ -561,8 +707,8 @@ export const WikiPage = () => {
           </p>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
             <li><strong>Custom:</strong> Build a server from scratch by choosing a Minecraft version and loader.</li>
-            <li><strong>Import:</strong> Upload a <code>.zip</code> of an existing server. Isopod extracts it into a new instance and shows upload and extraction progress.</li>
-            <li><strong>Modrinth:</strong> Search Modrinth modpacks and pick a pack version. Keep <em>Show only server-side compatible modpacks</em> enabled to hide packs that can&apos;t run on a dedicated server. Client-only mods inside a pack are excluded automatically.</li>
+            <li><strong>Import:</strong> Upload an Isopod server export (<code>.zip</code>) or a Minecraft singleplayer world (a <code>.zip</code> containing <code>level.dat</code>). Isopod extracts it into a new instance and shows upload and extraction progress.</li>
+            <li><strong>Modrinth:</strong> Search Modrinth modpacks and pick a pack version. Keep <em>Show only server-side compatible modpacks</em> enabled to hide packs that can&apos;t run on a dedicated server; the results update as soon as you change a filter. Client-only mods inside a pack are excluded automatically, and the pack&apos;s mods are listed in the Mods tab before the server&apos;s first start.</li>
             <li><strong>CurseForge:</strong> Search CurseForge modpacks and pick a pack version. This needs a free API key, see <a href="#/wiki/dashboard-guide/curseforge-modpacks" className="text-accent-emerald hover:underline">CurseForge Modpacks</a> below.</li>
           </ul>
           <p className="text-text-secondary leading-relaxed mb-4">
@@ -609,13 +755,60 @@ export const WikiPage = () => {
           <Alert type="warning">
             Keep your key private. Isopod only sends it to <code>api.curseforge.com</code> and passes it to the server container as an environment variable. It is not written to the instance&apos;s <code>docker-compose.yml</code>.
           </Alert>
+
+          <h2 id="groups" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Layers className="w-6 h-6 text-accent-cobalt" /> 5. Groups
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Groups sort your servers into labelled sections on the dashboard, for example &quot;Survival&quot; and &quot;Testing&quot;.
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>New server:</strong> Pick a group in the Add Instance window, or <strong>+ New Group...</strong> to make one. An imported Isopod export keeps its old group unless you pick another.</li>
+            <li><strong>Existing server:</strong> Right-click it and choose <strong>Change Group...</strong>.</li>
+            <li><strong>Rename / Dissolve:</strong> Use the buttons on a group&apos;s header. Dissolving a group moves its servers back out; it doesn&apos;t delete them.</li>
+          </ul>
+
+          <h2 id="context-menu" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Sliders className="w-6 h-6 text-accent-emerald" /> 6. Right-Click Menu
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Right-click a server tile for:
+          </p>
+          <WikiTable
+            headers={['Action', 'What it does']}
+            rows={[
+              ['Rename / Change Icon', 'Change the name or picture shown on the dashboard.'],
+              ['Launch / Stop (Safe) / Kill (Unsafe)', 'Power controls. Stop saves the world; Kill does not.'],
+              ['Edit...', 'Open the Edit window with all of the server\'s tabs.'],
+              ['Change Group...', 'Move the server to another group.'],
+              ['Folder', 'Open the server\'s files in the File Manager.'],
+              ['Export...', 'Download the whole server as a .zip, which you can import again later. Backups are left out.'],
+              ['Duplicate', 'Make a copy of the server with its own folder.'],
+              ['Delete', 'Remove the server and its files after you confirm.']
+            ]}
+          />
+          <p className="text-text-secondary leading-relaxed mb-4">
+            If an action fails, Isopod shows the reason instead of failing silently. A Restart that can&apos;t start the server again says so.
+          </p>
+
+          <h2 id="saving" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Settings className="w-6 h-6 text-accent-cobalt" /> 7. Saving in the Edit Window
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Mods and Backups tabs:</strong> Changes apply right away. There is nothing to save.</li>
+            <li><strong>User Management:</strong> Player changes and the Whitelist switch are saved with <strong>Save User Configuration</strong>; <strong>Discard Changes</strong> undoes them.</li>
+            <li><strong>Everything else</strong> (version, loader, world, configuration) waits for <strong>Save Changes</strong>. The sidebar shows <strong>Unsaved Changes</strong> while something is waiting.</li>
+            <li>Closing the window with anything unsaved asks <strong>Discard N unsaved changes?</strong> Choose <strong>Keep editing</strong> to go back and save.</li>
+          </ul>
         </div>
       )
     },
     {
       id: 'mod-management',
       title: 'Mods & Resource Packs (Modrinth)',
-      category: 'Using the Dashboard',
+      category: 'Mods & Players',
+      summary: "Install mods and plugins from Modrinth, manage several at once, and serve resource packs.",
+      sections: [{ id: 'installing-mods', title: 'Installing Mods' }, { id: 'managing-mods', title: 'Managing Installed Mods' }, { id: 'multi-select', title: 'Selecting Multiple Mods' }, { id: 'modpack-mods', title: 'Modpack Mods' }, { id: 'plugins', title: 'Plugins' }, { id: 'resource-packs', title: 'Server Resource Packs' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
@@ -657,13 +850,43 @@ export const WikiPage = () => {
             </div>
           </div>
 
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Click <strong>Add</strong> (or <strong>Add with Deps</strong> to include required libraries) next to a search result. The mod downloads straight away and shows <strong>Installing...</strong> until it&apos;s done. Every change in the Mods tab applies immediately; there is nothing to save. Isopod takes a <a href="#/wiki/backups/snapshots" className="text-accent-emerald hover:underline">snapshot</a> first, so you can roll back if a mod breaks the server.
+          </p>
+
           <h2 id="managing-mods" className="text-2xl font-bold text-white mt-10 mb-4">📦 Managing Installed Mods</h2>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
-            <li><strong>Enable / Disable:</strong> Temporarily toggle a mod off with a single click without deleting your configuration files (safely renames <code>.jar</code> to <code>.jar.disabled</code>).</li>
-            <li><strong>One-Click Uninstall:</strong> Delete unwanted mods cleanly from the <code>mods/</code> directory.</li>
-            <li><strong>Direct Jar Upload:</strong> Have a custom private mod? Drop your <code>.jar</code> directly into the instance's <code>mods/</code> folder or use the file uploader.</li>
-            <li><strong>Check for Updates:</strong> Scan installed Modrinth mods for newer versions compatible with your server&apos;s Minecraft version and loader.</li>
+            <li><strong>Enable / Disable:</strong> Double-click a mod, or select it and use the buttons, to turn it off without deleting its configuration files (Isopod renames <code>.jar</code> to <code>.jar.disabled</code>).</li>
+            <li><strong>Remove:</strong> Delete unwanted mods cleanly from the <code>mods/</code> directory.</li>
+            <li><strong>Direct Jar Upload:</strong> Have a custom private mod? Upload your <code>.jar</code> in the Mods tab, or drop it into the instance&apos;s <code>mods/</code> folder with the File Manager.</li>
+            <li><strong>Check for Updates:</strong> Downloads any configured mods that are missing from disk and reports which ones it fetched or couldn&apos;t. It doesn&apos;t update mods that are already installed yet.</li>
           </ul>
+
+          <h2 id="multi-select" className="text-2xl font-bold text-white mt-10 mb-4">🧩 Selecting Multiple Mods</h2>
+          <WikiTable
+            headers={['Do this', 'To']}
+            rows={[
+              ['Click', 'Select only that mod.'],
+              ['Ctrl + Click (Cmd + Click on Mac)', 'Add or remove one mod from the selection.'],
+              ['Shift + Click', 'Select every mod between the last one you clicked and this one.'],
+              ['Ctrl + A (Cmd + A)', 'Select every mod that matches the search box.'],
+              ['Esc, or click empty space', 'Clear the selection.'],
+              ['Delete', 'Remove the selected mods.']
+            ]}
+          />
+          <p className="text-text-secondary leading-relaxed mb-4">
+            With several mods selected, <strong>Enable</strong>, <strong>Disable</strong>, and <strong>Remove</strong> show how many mods they will change, for example <strong>Disable (3)</strong>. Remove asks once for all of them. Mods hidden by the search box are left out of the selection, so a batch action never changes a mod you can&apos;t see.
+          </p>
+
+          <h2 id="modpack-mods" className="text-2xl font-bold text-white mt-10 mb-4">🗂️ Modpack Mods</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            On a server made from a Modrinth modpack, the Mods tab lists the pack&apos;s mods right after you create it, marked <strong>Installs on start</strong>. You can disable or remove them before the first start, and they won&apos;t be installed. Once the server has started, the list shows the real files on disk.
+          </p>
+
+          <h2 id="plugins" className="text-2xl font-bold text-white mt-10 mb-4">🔌 Plugins</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            On Paper, Purpur, and Folia servers the Mods tab manages <strong>plugins</strong> in the <code>plugins</code> folder instead. Its header reads <strong>Plugins</strong>, and <strong>Download Plugins</strong> searches Modrinth for plugins that run on that server type. On Folia, only plugins marked Folia-compatible appear. See <a href="#/wiki/versions-loaders/loaders" className="text-accent-emerald hover:underline">Choosing a Server Type</a>.
+          </p>
 
           <h2 id="resource-packs" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Layers className="w-6 h-6 text-accent-cobalt" /> Server Resource Packs
@@ -677,7 +900,7 @@ export const WikiPage = () => {
           </ul>
 
           <Alert type="note">
-            The Mods and Resource Packs tabs search Modrinth only. You can still create a server from a <strong>CurseForge</strong> modpack when you add an instance, see <a href="#/wiki/dashboard-guide/curseforge-modpacks" className="text-accent-emerald hover:underline">CurseForge Modpacks</a>.
+            The Mods and Resource Packs tabs search Modrinth only. You can still create a server from a <strong>CurseForge</strong> modpack when you add an instance, see <a href="#/wiki/dashboard-guide/curseforge-modpacks" className="text-accent-emerald hover:underline">CurseForge Modpacks</a>. Bedrock servers have no Mods or Resource Packs tab, see <a href="#/wiki/bedrock/bedrock-limits" className="text-accent-emerald hover:underline">Bedrock limitations</a>.
           </Alert>
 
           <Alert type="tip">
@@ -689,7 +912,9 @@ export const WikiPage = () => {
     {
       id: 'server-tuning',
       title: 'Server Configuration & Tuning',
-      category: 'Using the Dashboard',
+      category: 'Servers',
+      summary: "The Configuration tab: auto-restart, sleep when empty, memory, and raw environment variables.",
+      sections: [{ id: 'restart-policy', title: 'Restart Automatically' }, { id: 'sleep', title: 'Sleep When Empty' }, { id: 'memory', title: 'Memory' }, { id: 'server-settings', title: 'server.properties' }, { id: 'raw-environment', title: 'Raw Environment Variables' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
@@ -697,50 +922,81 @@ export const WikiPage = () => {
           </div>
           <h1 className="text-4xl font-extrabold text-white mb-6">Server Configuration & Tuning</h1>
           <p className="text-lg text-text-secondary leading-relaxed mb-6">
-            Fine-tune every aspect of your Minecraft server. Isopod provides an easy-to-use graphical editor for <code>server.properties</code> alongside container resource controls.
+            The <strong>Configuration</strong> tab of the Edit window controls how a server runs: whether it restarts on its own, whether it sleeps when nobody is playing, and the raw settings passed to its container. Changes here wait for <strong>Save Changes</strong> and take effect the next time the server starts.
           </p>
 
-          <h2 id="server-settings" className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
-            <Settings className="w-6 h-6 text-accent-cobalt" /> Graphical Server Settings
+          <h2 id="restart-policy" className="text-2xl font-bold text-white mt-8 mb-4 flex items-center gap-2.5">
+            <RefreshCw className="w-6 h-6 text-accent-cobalt" /> Restart Automatically
           </h2>
           <WikiTable
-            headers={['Setting Property', 'Description', 'Recommended Value']}
+            headers={['Option', 'The server restarts']}
             rows={[
-              ['MOTD', 'The message displayed in players\' multiplayer server list.', 'Your custom community title and color codes'],
-              ['Max Players', 'Maximum simultaneous players allowed on the server.', '10 - 50 (based on allocated RAM)'],
-              ['Difficulty', 'Peaceful, Easy, Normal, or Hard.', 'Normal or Hard'],
-              ['Game Mode', 'Survival, Creative, Adventure, or Spectator.', 'Survival'],
-              ['View Distance', 'Number of chunks sent to the player (affects server CPU heavily).', '8 - 12 (10 is ideal for 1.18+)'],
-              ['Simulation Distance', 'Radius of chunks where entities, crops, and ticks are processed.', '6 - 8 (crucial for tick performance)'],
-              ['Online Mode', 'Validates players with Mojang authentication servers.', 'True (keep enabled for security)'],
-              ['White-List', 'Only players added to the whitelist can join.', 'True (recommended for private servers)'],
-              ['Allow Flight', 'Prevents survival players from being kicked for floating.', 'True if using elytra or modded movement']
+              ['Always (also after a reboot)', 'After a crash, after a clean /stop from inside the game, and when your computer or Docker restarts. This is the default.'],
+              ['Only after a crash', 'Only when it crashes.'],
+              ['Never', 'Never. It stays stopped until you start it.']
             ]}
           />
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Isopod stops a server that crashes 3 times within 2 minutes, whatever this is set to. See <a href="#/wiki/crashes" className="text-accent-emerald hover:underline">Crashes &amp; Auto-Restart</a>.
+          </p>
 
-          <h2 id="memory" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
-            <Cpu className="w-6 h-6 text-accent-emerald" /> Memory & JVM Optimization
+          <h2 id="sleep" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Zap className="w-6 h-6 text-sky-400" /> Sleep When Empty
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
-            Isopod automatically injects <strong>Aikar's Optimized Garbage Collection Flags</strong> into the Java virtual machine under the hood. To ensure peak performance:
+            A Java server can pause itself when nobody is playing, so it stops using CPU. Turn on <strong>Sleep when empty</strong> and pick how many minutes it waits (10 by default). The timer starts when the last player leaves, or at startup if nobody joins.
           </p>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
-            <li><strong>Leave Host Headroom:</strong> Never allocate 100% of your computer's RAM to a Minecraft instance. Leave at least 2 GB free for the operating system and Docker engine.</li>
-            <li><strong>Modpack Guidelines:</strong> Light vanilla/plugins: 2 - 4 GB. Heavy Fabric/Forge modpacks: 6 - 10 GB. Big Modrinth and CurseForge packs with hundreds of mods belong at the top of that range. If a pack runs out of memory, raise <code>MEMORY</code> in the instance Configuration tab.</li>
+            <li>Before pausing, the server saves the world. While it&apos;s paused, its tile shows a blue dot and the side panel says <strong>Sleeping</strong>.</li>
+            <li>To wake it, connect to it in Minecraft, or just refresh your server list. It resumes within a few seconds and the join goes through as normal. If nobody joins after a server-list refresh, it goes back to sleep after about 2 minutes.</li>
+            <li>Stopping a sleeping server from the dashboard wakes it first, so it shuts down cleanly.</li>
+            <li>A scheduled backup wakes it briefly too.</li>
           </ul>
+          <Alert type="note">
+            A paused server still holds its RAM, though your computer can move it out to disk. Stop the server if you need the memory back. Sleep isn&apos;t available for Bedrock servers.
+          </Alert>
+
+          <h2 id="memory" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Cpu className="w-6 h-6 text-accent-emerald" /> Memory
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            A new server gets the <strong>Default RAM Allocation</strong> from <a href="#/wiki/app-settings/defaults" className="text-accent-emerald hover:underline">Settings</a> (1 GB unless you changed it). To change it for one server, edit <code>MEMORY</code> in the raw environment variables below, for example <code>4G</code>.
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Leave Host Headroom:</strong> Never allocate all of your computer&apos;s RAM to Minecraft. Leave at least 2 GB free for the operating system and Docker.</li>
+            <li><strong>Modpack Guidelines:</strong> Light vanilla/plugins: 2 - 4 GB. Heavy Fabric/Forge modpacks: 6 - 10 GB. Big Modrinth and CurseForge packs with hundreds of mods belong at the top of that range.</li>
+            <li><code>MEMORY</code> sets the Java heap. The server uses 10-30% more than that in total, which is normal. See <a href="#/wiki/monitoring/resource-usage" className="text-accent-emerald hover:underline">Resource Usage</a>.</li>
+          </ul>
+
+          <h2 id="server-settings" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Settings className="w-6 h-6 text-accent-cobalt" /> server.properties
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Seed, level type, difficulty, game mode, and structures have their own controls in the <a href="#/wiki/world-settings" className="text-accent-emerald hover:underline">World tab</a>. For everything else, such as the MOTD, max players, or view distance, open <code>server.properties</code> in the <a href="#/wiki/file-manager" className="text-accent-emerald hover:underline">Files tab</a>, edit it, and restart the server. Common settings:
+          </p>
+          <WikiTable
+            headers={['Property', 'Description', 'Suggested Value']}
+            rows={[
+              ['motd', 'The message shown in players\' multiplayer server list.', 'Your server\'s name'],
+              ['max-players', 'Maximum players online at once.', '10 - 50 (based on allocated RAM)'],
+              ['view-distance', 'Number of chunks sent to each player. Affects server CPU heavily.', '8 - 12'],
+              ['simulation-distance', 'Radius of chunks where entities, crops, and redstone tick.', '6 - 8'],
+              ['online-mode', 'Checks players with Mojang\'s login servers.', 'true (keep it on)'],
+              ['allow-flight', 'Stops players from being kicked for flying.', 'true if mods add flight']
+            ]}
+          />
+          <Alert type="tip">
+            Lowering <code>simulation-distance</code> from 10 to 6 can noticeably improve your server&apos;s TPS (ticks per second) with little difference to gameplay.
+          </Alert>
 
           <h2 id="raw-environment" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <FileCode className="w-6 h-6 text-yellow-400" /> Advanced: Raw Environment Variables
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
-            The instance <strong>Configuration</strong> tab lists every environment variable passed to the server container (such as <code>MEMORY</code>, <code>TYPE</code>, and <code>VERSION</code>) and lets you edit their values directly.
+            The <strong>Advanced: RAW Environment</strong> section lists every environment variable passed to the server container (such as <code>MEMORY</code>, <code>TYPE</code>, and <code>VERSION</code>) and lets you edit their values directly. They are the settings of the <a href="https://docker-minecraft-server.readthedocs.io" target="_blank" rel="noopener noreferrer" className="text-accent-emerald hover:underline">itzg/minecraft-server</a> image, whose documentation lists them all.
           </p>
           <Alert type="warning">
             Invalid values can stop the container from starting. Prefer the dedicated Versions, Loaders, and Mods tabs, and only edit raw variables when you know what they do.
-          </Alert>
-
-          <Alert type="tip">
-            Lowering <code>simulation-distance</code> from 10 to 6 can double your server's TPS (Ticks Per Second) with minimal noticeable difference to gameplay.
           </Alert>
         </div>
       )
@@ -748,7 +1004,9 @@ export const WikiPage = () => {
     {
       id: 'console-rcon',
       title: 'Live Console & RCON',
-      category: 'Using the Dashboard',
+      category: 'Servers',
+      summary: "Read live logs, send commands, and start, stop, or kill a server.",
+      sections: [{ id: 'console', title: 'Sending Commands' }, { id: 'log-controls', title: 'Log Viewer Controls' }, { id: 'power', title: 'Start, Stop & Kill' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 text-xs font-semibold mb-4">
@@ -763,7 +1021,7 @@ export const WikiPage = () => {
             <Terminal className="w-6 h-6 text-yellow-400" /> Interactive RCON Console
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
-            The console tab features an integrated RCON terminal. Type any standard Minecraft command into the input bar and press Enter:
+            The <strong>Minecraft Log</strong> tab features an integrated RCON terminal. Type any standard Minecraft command into the input bar and press Enter. Press the <strong>Up</strong> and <strong>Down</strong> arrow keys to bring back commands you ran before.
           </p>
 
           <WikiTable
@@ -776,15 +1034,20 @@ export const WikiPage = () => {
               ['Force World Save', <code key="save" className="text-xs text-yellow-400">save-all</code>, 'Flushes all player chunks and inventories immediately to disk.']
             ]}
           />
+          <p className="text-text-secondary leading-relaxed mb-4">
+            If a command fails, it stays in the input box so you can fix and retry it, and the console adds an <code>[Isopod] Command failed</code> line saying why. On Bedrock servers, command output appears in the log rather than under the input box.
+          </p>
 
           <h2 id="log-controls" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Search className="w-6 h-6 text-accent-cobalt" /> Log Viewer Controls
           </h2>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Simplified / Verbose:</strong> Simplified hides background noise and keeps chat, joins, errors, and the commands you ran with their replies. Verbose shows every line.</li>
             <li><strong>Keep updating:</strong> Stream new log lines live. Turn it off to freeze the view while you read.</li>
             <li><strong>Wrap lines / Color lines:</strong> Toggle line wrapping and color highlighting for errors, warnings, commands, and player events.</li>
             <li><strong>Copy / Clear / Refresh:</strong> Copy the whole log to your clipboard, clear the view, or re-fetch logs from the server.</li>
             <li><strong>Search &amp; Find:</strong> Highlight matches and jump between them. <strong>Bottom</strong> scrolls back to the newest line.</li>
+            <li><strong>Crash Report:</strong> Opens the newest crash report with its root cause. See <a href="#/wiki/crashes/crash-report" className="text-accent-emerald hover:underline">Crash Report</a>.</li>
           </ul>
 
           <h2 id="power" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
@@ -812,7 +1075,7 @@ export const WikiPage = () => {
                 <AlertTriangle className="w-4 h-4" /> Force Kill
               </h4>
               <p className="text-text-secondary text-xs leading-relaxed">
-                Immediately terminates the container if a rogue mod causes the server process to hang or freeze indefinitely.
+                Immediately terminates the container if a rogue mod causes the server process to hang or freeze indefinitely. Isopod asks you to confirm first, and a kill never counts as a crash.
               </p>
             </div>
           </div>
@@ -822,16 +1085,18 @@ export const WikiPage = () => {
 
     {
       id: 'versions-loaders',
-      title: 'Versions & Mod Loaders',
-      category: 'Using the Dashboard',
+      title: 'Versions & Server Types',
+      category: 'Servers',
+      summary: "Change a server's Minecraft version and server type: Fabric, Forge, NeoForge, Quilt, Paper, Purpur, or Folia.",
+      sections: [{ id: 'versions', title: 'Changing the Minecraft Version' }, { id: 'update-world', title: 'Update World Button' }, { id: 'loaders', title: 'Choosing a Server Type' }, { id: 'folia', title: 'Folia' }, { id: 'cross-play', title: 'Bedrock Cross-play' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
             <Box className="w-3.5 h-3.5" /> Server Software
           </div>
-          <h1 className="text-4xl font-extrabold text-white mb-6">Versions &amp; Mod Loaders</h1>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Versions &amp; Server Types</h1>
           <p className="text-lg text-text-secondary leading-relaxed mb-6">
-            Change the Minecraft version an instance runs and the loader that runs its mods, from the <strong>Versions</strong> and <strong>Loaders</strong> tabs of the instance editor.
+            Change the Minecraft version an instance runs and the server type (loader) that runs its mods or plugins, from the <strong>Versions</strong> and <strong>Loaders</strong> tabs of the Edit window. Both are saved with <strong>Save Changes</strong>, and Isopod takes a <a href="#/wiki/backups/snapshots" className="text-accent-emerald hover:underline">snapshot</a> first so you can roll back.
           </p>
 
           <h2 id="versions" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
@@ -845,24 +1110,209 @@ export const WikiPage = () => {
             <li><strong>Verify &amp; disable incompatible mods</strong>, so only mods with a matching release stay enabled.</li>
           </ul>
           <Alert type="warning">
-            Back up your world before changing versions. Worlds can be upgraded to newer versions but not safely downgraded.
+            Worlds can be upgraded to newer versions but not safely downgraded. Isopod&apos;s automatic snapshot lets you undo a version change, but a full <a href="#/wiki/backups" className="text-accent-emerald hover:underline">backup</a> never hurts.
           </Alert>
+
+          <h2 id="update-world" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <RefreshCw className="w-6 h-6 text-accent-emerald" /> Update World Button
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            When a newer stable Minecraft release is out, the side panel shows <strong>Update to &lt;version&gt;</strong>. It opens the Versions tab with the <strong>Change Minecraft Version</strong> dialog ready for that release, including the mod compatibility check. Confirm there, then press <strong>Save Changes</strong>.
+          </p>
+
           <h2 id="loaders" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Cpu className="w-6 h-6 text-accent-cobalt" /> Choosing a Mod Loader
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
-            The <strong>Loaders</strong> tab sets how Minecraft loads mods: Vanilla (no mods), Fabric, Forge, NeoForge, Quilt, or Paper for plugins. Pick a specific loader version, or leave it on <strong>Latest Recommended</strong>.
+            Pick a server type when you add an instance, or change it later in the <strong>Loaders</strong> tab. Each type lets you pin a loader version or build, or use <strong>Latest Recommended</strong>.
+          </p>
+          <WikiTable
+            headers={['Type', 'Runs', 'Good for']}
+            rows={[
+              ['Vanilla', 'Nothing extra', 'The plain Minecraft experience.'],
+              ['Fabric / Quilt', 'Mods from the mods folder', 'Lightweight and performance mods. Quilt runs most Fabric mods.'],
+              ['Forge / NeoForge', 'Mods from the mods folder', 'Big content mods and classic modpacks.'],
+              ['Paper', 'Paper, Spigot, and Bukkit plugins', 'Fast servers with plugins.'],
+              ['Purpur', 'The same plugins as Paper, plus Purpur-only ones', 'Paper with extra gameplay and config options.'],
+              ['Folia', 'Folia-compatible plugins only', 'Very large servers on machines with many CPU cores.'],
+              ['Bedrock', 'No mods or plugins', 'Phone, console, and Windows players. See Bedrock Edition.']
+            ]}
+          />
+          <p className="text-text-secondary leading-relaxed mb-4">
+            On Paper, Purpur, and Folia, the Mods tab manages <a href="#/wiki/mod-management/plugins" className="text-accent-emerald hover:underline">plugins</a> instead of mods.
           </p>
           <Alert type="note">
             Mods are built for one loader. Switching loaders (for example Fabric to Forge) will stop most existing mods from loading.
           </Alert>
+
+          <h2 id="folia" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <AlertTriangle className="w-6 h-6 text-yellow-400" /> Folia
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Folia runs each region of the world on its own thread. Most Paper plugins don&apos;t work on it, so the plugin search only shows plugins marked Folia-compatible. Folia only exists for some Minecraft versions (1.19.4 and newer) and all of its builds are experimental. Isopod warns you when the version you picked has no Folia build.
+          </p>
+
+          <h2 id="cross-play" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Globe className="w-6 h-6 text-orange-400" /> Bedrock Cross-play
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Paper, Purpur, Fabric, and NeoForge servers have a <strong>Bedrock cross-play</strong> switch in the Loaders tab. It lets phone, console, and Windows players join your Java server. See <a href="#/wiki/bedrock/cross-play-setup" className="text-accent-emerald hover:underline">Cross-play on a Java Server</a>.
+          </p>
+        </div>
+      )
+    },
+    {
+      id: 'bedrock',
+      title: 'Bedrock Edition & Cross-play',
+      category: 'Servers',
+      summary: "Host players on phones, consoles, and Windows: run a Bedrock server, or let Bedrock players join a Java server.",
+      sections: [{ id: 'bedrock-server', title: 'Running a Bedrock Server' }, { id: 'bedrock-allowlist', title: 'Allowlist & Operators' }, { id: 'bedrock-console', title: 'Console & Backups' }, { id: 'cross-play-setup', title: 'Cross-play on a Java Server' }, { id: 'bedrock-ports', title: 'Ports' }, { id: 'bedrock-limits', title: 'Limitations' }],
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-400/10 border border-orange-400/20 text-orange-400 text-xs font-semibold mb-4">
+            <Globe className="w-3.5 h-3.5" /> Bedrock Edition
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Bedrock Edition &amp; Cross-play</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            Minecraft on Windows, phones, tablets, and consoles is <strong>Bedrock Edition</strong>, and it can&apos;t join Java servers on its own. Isopod can host Bedrock players in two ways: a <strong>Bedrock server</strong>, which only Bedrock players can join, or <strong>cross-play</strong> on a Java server, which both can join.
+          </p>
+
+          <h2 id="bedrock-server" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Server className="w-6 h-6 text-orange-400" /> Running a Bedrock Server
+          </h2>
+          <ol className="list-decimal pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Click <strong>Add Instance</strong> and pick <strong>BEDROCK</strong> as the server type. Isopod runs Mojang&apos;s Bedrock Dedicated Server.</li>
+            <li>The port switches to <code>19132</code>, the standard Bedrock port.</li>
+            <li>Choose <strong>Latest release</strong> or <strong>Preview</strong> (for players on Minecraft Preview). To stay on one release, type its exact number, like <code>1.21.50.07</code>, in the <strong>Versions</strong> tab.</li>
+            <li>Create and start the server, then add it in Minecraft under <strong>Play &rarr; Servers &rarr; Add Server</strong> with the address shown in the side panel.</li>
+          </ol>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            In the World tab, the world types are Default, Flat, and Legacy. Bedrock has no Spectator game mode or structures switch.
+          </p>
+
+          <h2 id="bedrock-allowlist" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Lock className="w-6 h-6 text-accent-cobalt" /> Allowlist &amp; Operators
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Bedrock calls the whitelist the <strong>allowlist</strong>. Manage it in the <strong>User Management</strong> tab:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Add players by Xbox gamertag. Spaces are fine, for example <code>Tacoz YouTube</code>.</li>
+            <li>Turn the allowlist on or off, and set each player to <strong>Member</strong> or <strong>Operator</strong>.</li>
+            <li>Changes reach a running server straight away, except that a new operator who isn&apos;t online gets operator powers at the next start.</li>
+            <li>Bedrock has no ban command, so there&apos;s no Banned Players list. To keep someone out, turn the allowlist on and remove them from it.</li>
+          </ul>
+
+          <h2 id="bedrock-console" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Terminal className="w-6 h-6 text-yellow-400" /> Console &amp; Backups
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Console commands work, but their output shows up in the log rather than under the input box.</li>
+            <li>Backups and snapshots include the <code>worlds</code> folder. While the server is running, Isopod pauses saving for a few seconds so the copy is consistent.</li>
+          </ul>
+
+          <h2 id="cross-play-setup" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Globe className="w-6 h-6 text-accent-emerald" /> Cross-play on a Java Server
+          </h2>
+          <ol className="list-decimal pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Open a Paper, Purpur, Fabric, or NeoForge server&apos;s <strong>Loaders</strong> tab.</li>
+            <li>Switch on <strong>Bedrock cross-play</strong>, press <strong>Save Changes</strong>, and restart the server.</li>
+            <li>Bedrock players join on the <strong>Bedrock</strong> address shown next to the Java address in the side panel (UDP, <code>19132</code> by default).</li>
+          </ol>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Isopod installs <a href="https://geysermc.org" target="_blank" rel="noopener noreferrer" className="text-accent-emerald hover:underline">Geyser</a>, which translates between Bedrock and Java, and Floodgate, which lets Bedrock players join without a Java account. On Fabric it also adds Fabric API, which both need.</li>
+            <li>Bedrock players&apos; names start with a <code>.</code> so they can&apos;t clash with Java names.</li>
+            <li>Switching cross-play off removes the Geyser and Floodgate jars and the Bedrock port. Their config folders stay, in case you turn it back on.</li>
+          </ul>
+          <Alert type="note">
+            Geyser supports the newest Java releases. On an older Minecraft version, Bedrock players may not be able to join.
+          </Alert>
+
+          <h2 id="bedrock-ports" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Wifi className="w-6 h-6 text-accent-cobalt" /> Ports
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Bedrock uses <strong>UDP</strong>, not TCP, so forward the port as UDP on your router (see <a href="#/wiki/port-forwarding" className="text-accent-emerald hover:underline">Port Forwarding</a>). Isopod publishes UDP ports <code>19132</code>-<code>19152</code>, so keep Bedrock ports in that range.
+          </p>
+          <Alert type="warning">
+            Installed Isopod before Bedrock support? Add <code>19132-19152:19132-19152/udp</code> to the ports in your compose file and recreate the container, or Bedrock players can&apos;t connect.
+          </Alert>
+
+          <h2 id="bedrock-limits" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <AlertTriangle className="w-6 h-6 text-yellow-400" /> Limitations
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Bedrock servers can&apos;t run Java mods or plugins, so the Edit window has no <strong>Loaders</strong>, <strong>Mods</strong>, or <strong>Resource Packs</strong> tab. Bedrock add-ons and resource packs aren&apos;t supported yet.</li>
+            <li>The online player list isn&apos;t available for Bedrock servers yet.</li>
+            <li><a href="#/wiki/server-tuning/sleep" className="text-accent-emerald hover:underline">Sleep when empty</a> isn&apos;t available.</li>
+            <li>Saving a Bedrock server adds unused <code>RESOURCE_PACK_ID</code> and <code>CUSTOM_SERVER_PROPERTIES</code> entries to its raw environment variables. Bedrock ignores them, so you can leave them alone.</li>
+          </ul>
+        </div>
+      )
+    },
+    {
+      id: 'crashes',
+      title: 'Crashes & Auto-Restart',
+      category: 'Servers',
+      summary: "How Isopod spots crashes, restarts servers, stops crash loops, and shows crash reports.",
+      sections: [{ id: 'crash-badges', title: 'When a Server Crashes' }, { id: 'auto-restart', title: 'Auto-Restart & Crash Loops' }, { id: 'crash-report', title: 'Crash Report' }],
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-400/10 border border-red-400/20 text-red-400 text-xs font-semibold mb-4">
+            <AlertTriangle className="w-3.5 h-3.5" /> Crash Watchdog
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Crashes &amp; Auto-Restart</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            Isopod watches for servers that stop on their own. Stopping or killing a server from the dashboard never counts as a crash, and neither does a clean <code>/stop</code> from inside the game.
+          </p>
+
+          <h2 id="crash-badges" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <AlertTriangle className="w-6 h-6 text-red-400" /> When a Server Crashes
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li>Its tile shows a red <strong>Crashed (Code: X)</strong> badge, or <strong>Out of memory</strong> when it ran out of RAM.</li>
+            <li>The side panel explains what happened, with <strong>View Crash Report</strong> and <strong>Dismiss</strong>.</li>
+            <li>A server that crashed and came back on its own shows an amber note until you dismiss it or start it yourself.</li>
+          </ul>
+
+          <h2 id="auto-restart" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <RefreshCw className="w-6 h-6 text-accent-cobalt" /> Auto-Restart &amp; Crash Loops
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            <strong>Restart automatically</strong> in the Configuration tab decides what happens after a crash: <strong>Always</strong> (the default), <strong>Only after a crash</strong>, or <strong>Never</strong>. See <a href="#/wiki/server-tuning/restart-policy" className="text-accent-emerald hover:underline">Restart Automatically</a>.
+          </p>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Docker waits a little longer before each quick restart. If a server still crashes <strong>3 times within 2 minutes</strong>, Isopod stops it so a broken mod or world can&apos;t restart it forever, and the side panel says <strong>Crash loop stopped</strong>. Fix the problem, then press <strong>Launch</strong>.
+          </p>
+
+          <h2 id="crash-report" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <FileCode className="w-6 h-6 text-yellow-400" /> Crash Report
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            <strong>View Crash Report</strong>, or <strong>Crash Report</strong> in the Minecraft Log tab, opens the newest file from <code>crash-reports/</code>. It shows:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li>What crashed and the <strong>root cause</strong> (the last <code>Caused by:</code> line).</li>
+            <li><strong>Suspected mods</strong> named by the report.</li>
+            <li>The full report with errors highlighted, and the last log lines.</li>
+          </ul>
+          <WikiTable
+            headers={['Problem', 'What to try']}
+            rows={[
+              ['No crash report found', 'Crashes like running out of memory or a port already in use don\'t write one. Read the log lines shown below it.'],
+              ['Out of memory', 'Raise MEMORY in the Configuration tab. See Memory.'],
+              ['A suspected mod is listed', 'Disable or remove that mod in the Mods tab, or use Restore previous state if it came in with an update.']
+            ]}
+          />
         </div>
       )
     },
     {
       id: 'world-settings',
       title: 'World Settings',
-      category: 'Using the Dashboard',
+      category: 'Servers',
+      summary: "Seed, level type, difficulty, game mode, and structures.",
+      sections: [{ id: 'world-generation', title: 'Generation & Gameplay Options' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
@@ -892,7 +1342,9 @@ export const WikiPage = () => {
     {
       id: 'backups',
       title: 'World Backups',
-      category: 'Using the Dashboard',
+      category: 'Worlds & Files',
+      summary: "Scheduled and manual world backups, pre-update snapshots, and restoring.",
+      sections: [{ id: 'schedule', title: 'Automatic Backups' }, { id: 'manage', title: 'Managing Backups' }, { id: 'restore', title: 'Restoring a Backup' }, { id: 'snapshots', title: 'Pre-update Snapshots' }, { id: 'location', title: 'Where Backups Are Stored' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
@@ -944,6 +1396,22 @@ export const WikiPage = () => {
             Restoring replaces the current world. Anything built since that backup is lost unless you back up first.
           </Alert>
 
+          <h2 id="snapshots" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Archive className="w-6 h-6 text-sky-400" /> Pre-update Snapshots
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Before you change a server&apos;s Minecraft version, server type, loader version, modpack, or mods (adding, removing, enabling, or disabling them), Isopod takes a snapshot of its worlds, <code>mods</code>, <code>config</code>, and <code>plugins</code> folders, <code>server.properties</code>, and its Docker settings. Several changes within 10 minutes share one snapshot, taken before the first change.
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Roll back:</strong> After an update, the side panel shows <strong>Restore previous state</strong>. It stops the server if it&apos;s running and puts everything back as it was. Anything that changed since, including world progress, is lost. <strong>Dismiss</strong> hides the offer; the snapshot stays in the Backups tab.</li>
+            <li>The offer goes away on its own once the server has started successfully after the change.</li>
+            <li><strong>Manage:</strong> The Backups tab lists every snapshot with the change it was taken before. Download, restore, or delete them like backups.</li>
+            <li><strong>Snapshots to keep:</strong> How many are kept (3 by default); the oldest are removed first. Set it to <strong>0</strong> to turn snapshots off.</li>
+          </ul>
+          <Alert type="note">
+            If a snapshot can&apos;t be taken (for example, the disk is full), the change is not made and Isopod tells you why.
+          </Alert>
+
           <h2 id="location" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Server className="w-6 h-6 text-accent-cobalt" /> Where Backups Are Stored
           </h2>
@@ -962,7 +1430,9 @@ export const WikiPage = () => {
     {
       id: 'players-access',
       title: 'Players, Whitelist & Operators',
-      category: 'Using the Dashboard',
+      category: 'Mods & Players',
+      summary: "Whitelist, operators, bans, and live actions for online players.",
+      sections: [{ id: 'whitelist', title: 'Whitelist' }, { id: 'operators', title: 'Operator Levels' }, { id: 'online-players', title: 'Online Players' }, { id: 'bans', title: 'Banned Players' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
@@ -970,7 +1440,7 @@ export const WikiPage = () => {
           </div>
           <h1 className="text-4xl font-extrabold text-white mb-6">Players, Whitelist &amp; Operators</h1>
           <p className="text-lg text-text-secondary leading-relaxed mb-6">
-            The <strong>Users</strong> tab manages who can join your server and what they are allowed to do, without typing console commands.
+            The <strong>User Management</strong> tab manages who can join your server and what they are allowed to do, without typing console commands. Changes are saved with <strong>Save User Configuration</strong>. Bedrock servers work a little differently, see <a href="#/wiki/bedrock/bedrock-allowlist" className="text-accent-emerald hover:underline">Bedrock Allowlist &amp; Operators</a>.
           </p>
 
           <h2 id="whitelist" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
@@ -978,7 +1448,7 @@ export const WikiPage = () => {
           </h2>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
             <li><strong>Whitelist toggle:</strong> When enabled, only players on the list who are marked active can join. When disabled, anyone can join.</li>
-            <li><strong>Add Player:</strong> Type a Minecraft username and press Enter (Tab autocompletes known players).</li>
+            <li><strong>Add Player:</strong> Type a Minecraft username and press Enter. Tab autocompletes players this install has already seen.</li>
             <li><strong>Remove:</strong> Removes a player from the server&apos;s player list.</li>
           </ul>
           <p className="text-text-secondary leading-relaxed mb-4">
@@ -997,13 +1467,37 @@ export const WikiPage = () => {
               ['Level 4', 'Full operator, including server management commands.']
             ]}
           />
+
+          <h2 id="online-players" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Wifi className="w-6 h-6 text-accent-emerald" /> Online Players
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            While a server is online, its tile shows how many players are on, and the side panel lists them. Click a player for quick actions:
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>Message</strong> and <strong>Teleport</strong></li>
+            <li><strong>Op / Deop</strong> and <strong>Whitelist</strong></li>
+            <li><strong>Kick</strong> and <strong>Ban</strong></li>
+          </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The same actions appear on each player row in User Management, with <strong>ONLINE</strong> and <strong>BANNED</strong> badges. Not available on Bedrock servers yet.
+          </p>
+
+          <h2 id="bans" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <ShieldCheck className="w-6 h-6 text-red-400" /> Banned Players
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            User Management lists banned players with an <strong>Unban</strong> button. Unban works while the server is stopped, too.
+          </p>
         </div>
       )
     },
     {
       id: 'file-manager',
       title: 'File Manager',
-      category: 'Using the Dashboard',
+      category: 'Worlds & Files',
+      summary: "Browse, upload, edit, and move an instance's files.",
+      sections: [{ id: 'file-operations', title: 'Working with Files' }, { id: 'shortcuts', title: 'Keyboard Shortcuts' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
@@ -1023,7 +1517,25 @@ export const WikiPage = () => {
             <li><strong>Edit:</strong> Open text files such as <code>server.properties</code> to edit them in place.</li>
             <li><strong>Organize:</strong> Select items to cut, copy, paste, download, or delete. Drag items onto a folder or breadcrumb to move them.</li>
             <li><strong>Right-click menu:</strong> Rename, delete, and other actions for the item under your cursor.</li>
+            <li><strong>Name clashes:</strong> When a pasted or uploaded file already exists, choose <strong>Overwrite</strong>, <strong>Keep Both (Auto-Rename)</strong>, or <strong>Cancel</strong>.</li>
           </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            <strong>Folders</strong> in the dashboard header opens the same browser for all servers at once.
+          </p>
+
+          <h2 id="shortcuts" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Sliders className="w-6 h-6 text-accent-emerald" /> Keyboard Shortcuts
+          </h2>
+          <WikiTable
+            headers={['Key', 'Action']}
+            rows={[
+              ['Delete', 'Delete the selected files.'],
+              ['F2', 'Rename the selected item.'],
+              ['Ctrl + C / Ctrl + X / Ctrl + V', 'Copy, cut, and paste.'],
+              ['Ctrl + A', 'Select everything in the folder.'],
+              ['Esc', 'Cancel renaming or close the right-click menu.']
+            ]}
+          />
           <Alert type="warning">
             Stop the server before editing or deleting world files. Changing them while it runs can corrupt your world.
           </Alert>
@@ -1033,7 +1545,9 @@ export const WikiPage = () => {
     {
       id: 'app-settings',
       title: 'Dashboard Settings',
-      category: 'Using the Dashboard',
+      category: 'Dashboard',
+      summary: "Isopod's own settings: refresh, backup folder, language, theme, server defaults, and updates.",
+      sections: [{ id: 'general', title: 'General' }, { id: 'language', title: 'Language' }, { id: 'appearance', title: 'Appearance' }, { id: 'defaults', title: 'Server Defaults' }, { id: 'updates', title: 'Updates' }, { id: 'advanced', title: 'Advanced' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
@@ -1048,7 +1562,7 @@ export const WikiPage = () => {
             <Monitor className="w-6 h-6 text-accent-cobalt" /> General
           </h2>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
-            <li><strong>Automatic Refresh:</strong> Update server statuses every 5 seconds.</li>
+            <li><strong>Automatic Refresh:</strong> Update server statuses and <a href="#/wiki/monitoring/resource-usage" className="text-accent-emerald hover:underline">resource usage</a> every few seconds.</li>
             <li><strong>Show Snapshots:</strong> Include Minecraft snapshot versions in version lists.</li>
             <li><strong>Backup Folder:</strong> Where world backups are stored. Leave empty to keep them inside each instance. See <button onClick={() => setActiveArticleId('backups')} className="text-accent-emerald hover:underline font-semibold cursor-pointer">World Backups</button>.</li>
           </ul>
@@ -1064,6 +1578,9 @@ export const WikiPage = () => {
           <p className="text-text-secondary leading-relaxed mb-4">
             Switch between Dark Mode and Light Mode.
           </p>
+          <Alert type="tip">
+            The cat button in the dashboard header, a nod to Prism Launcher, turns on a <strong>MEOW</strong> background. Click it again to turn it off. It currently only shows in Dark Mode.
+          </Alert>
           <h2 id="defaults" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Server className="w-6 h-6 text-accent-cobalt" /> Server Defaults
           </h2>
@@ -1076,13 +1593,102 @@ export const WikiPage = () => {
             <RefreshCw className="w-6 h-6 text-accent-emerald" /> Updates
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
-            Compare your installed Isopod version with the latest release, read its release notes, and install updates. Isopod reconnects automatically once an update finishes.
+            Compare your installed Isopod version with the latest release, read its release notes, and install updates. A progress bar follows the update, and Isopod reconnects and reloads automatically once it finishes.
           </p>
           <h2 id="advanced" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
             <Lock className="w-6 h-6 text-yellow-400" /> Advanced
           </h2>
           <p className="text-text-secondary leading-relaxed mb-4">
             Set the <strong>Docker Socket Path</strong> Isopod uses to manage server containers. Only change this if Docker runs at a non-standard location on your host.
+          </p>
+        </div>
+      )
+    },
+    {
+      id: 'monitoring',
+      title: 'Resource Usage',
+      category: 'Dashboard',
+      summary: "Live CPU and RAM use for each server and for all of them together.",
+      sections: [{ id: 'resource-usage', title: 'CPU & RAM' }, { id: 'reading-usage', title: 'Reading the Numbers' }],
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-400 text-xs font-semibold mb-4">
+            <Cpu className="w-3.5 h-3.5" /> Monitoring
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Resource Usage</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            See how much CPU and RAM your servers use, so you know when a server needs more memory or your machine is full.
+          </p>
+
+          <h2 id="resource-usage" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Cpu className="w-6 h-6 text-sky-400" /> CPU &amp; RAM
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>All servers:</strong> The dashboard header shows total CPU and RAM for every running server, with RAM shown against your machine&apos;s total memory (e.g. <code>3.1/16 GB</code>). It is hidden on screens narrower than 1366px.</li>
+            <li><strong>One server:</strong> Select a running server to see its CPU and RAM in the side panel. Running servers also show their RAM under their tile.</li>
+            <li>Usage updates every few seconds while <strong>Automatic Refresh</strong> is on in Settings, and whenever you press <strong>Refresh</strong>.</li>
+          </ul>
+
+          <h2 id="reading-usage" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Info className="w-6 h-6 text-accent-cobalt" /> Reading the Numbers
+          </h2>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><strong>CPU</strong> is a share of your whole machine: 100% means every core is busy. Minecraft mostly runs on one core, so a busy server on an 8-core machine shows around 12%.</li>
+            <li><strong>RAM</strong> is shown as <code>2.2 GB used · 2.0 GB heap</code>. The heap is the memory set aside for Minecraft&apos;s world data (<code>MEMORY</code>, see <a href="#/wiki/server-tuning/memory" className="text-accent-emerald hover:underline">Memory</a>). Java needs extra memory on top of it, so using 10-30% more than the heap is normal.</li>
+          </ul>
+          <Alert type="note">
+            RAM always reads 0? Your Isopod image is older than this feature. Rebuild the image and recreate the container: <code>docker compose -f isopod-compose.yml up -d --build</code>.
+          </Alert>
+        </div>
+      )
+    },
+    {
+      id: 'troubleshooting',
+      title: 'Troubleshooting',
+      category: 'Dashboard',
+      summary: "Lost connection, servers that won't start, players who can't join, and where to get help.",
+      sections: [{ id: 'lost-connection', title: 'Lost Connection' }, { id: 'common-problems', title: 'Common Problems' }, { id: 'get-help', title: 'Getting Help' }],
+      content: () => (
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 text-xs font-semibold mb-4">
+            <AlertTriangle className="w-3.5 h-3.5" /> Troubleshooting
+          </div>
+          <h1 className="text-4xl font-extrabold text-white mb-6">Troubleshooting</h1>
+          <p className="text-lg text-text-secondary leading-relaxed mb-6">
+            Fixes for the problems people run into most. Each feature&apos;s article also has its own troubleshooting notes.
+          </p>
+
+          <h2 id="lost-connection" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <Wifi className="w-6 h-6 text-yellow-400" /> Lost Connection
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The dashboard checks every few seconds that it can still reach Isopod, even with Automatic Refresh off. If two checks in a row fail, a <strong>Lost connection to Isopod</strong> banner appears and every server shows <strong>Unknown</strong>, because its last known status can&apos;t be trusted. Once Isopod is reachable again, the banner clears and statuses reload on their own; <strong>Retry</strong> checks right away.
+          </p>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            If the dashboard can&apos;t reach Isopod when it first loads, it shows <strong>Can&apos;t reach Isopod</strong> instead of an empty server list. Check that the container is running with <code>docker compose -f isopod-compose.yml ps</code>, and read its logs with <code>docker compose -f isopod-compose.yml logs -f</code>.
+          </p>
+
+          <h2 id="common-problems" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <AlertTriangle className="w-6 h-6 text-red-400" /> Common Problems
+          </h2>
+          <WikiTable
+            headers={['Problem', 'What to try']}
+            rows={[
+              [<>The server crashes or keeps restarting</>, <>Open the <a href="#/wiki/crashes/crash-report" className="text-accent-emerald hover:underline">Crash Report</a>. If a mod update caused it, use <strong>Restore previous state</strong>.</>],
+              [<>Creating a server fails with a port error</>, <>Another server already uses that port. Pick a free one between 25565 and 25585.</>],
+              [<>Friends can&apos;t join</>, <>Forward the server&apos;s port (TCP for Java, UDP for Bedrock), or use a <a href="#/wiki/tunneling-alternatives" className="text-accent-emerald hover:underline">tunnel</a>.</>],
+              [<>Bedrock players can&apos;t join</>, <>Check that the UDP ports 19132-19152 are in your compose file. See <a href="#/wiki/bedrock/bedrock-ports" className="text-accent-emerald hover:underline">Bedrock Ports</a>.</>],
+              [<><code>mounts denied</code> on a Mac</>, <>Do the one-time <a href="#/wiki/getting-started/macos" className="text-accent-emerald hover:underline">macOS setup</a> and run <code>docker compose</code> without <code>-f</code>.</>],
+              [<>CurseForge says &quot;Couldn&apos;t load modpacks&quot;</>, <>See the table in <a href="#/wiki/dashboard-guide/curseforge-modpacks" className="text-accent-emerald hover:underline">CurseForge Modpacks</a>.</>],
+              [<>A console command does nothing</>, <>A failed command stays in the input box with the reason in the log. Bedrock servers print replies in the log.</>]
+            ]}
+          />
+
+          <h2 id="get-help" className="text-2xl font-bold text-white mt-10 mb-4 flex items-center gap-2.5">
+            <BookOpen className="w-6 h-6 text-accent-emerald" /> Getting Help
+          </h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Every tab in the dashboard has a <strong>?</strong> button that opens the matching wiki section. Still stuck? <a href="https://github.com/Isopod-Project/Isopod/issues" target="_blank" rel="noopener noreferrer" className="text-accent-emerald hover:underline">Open an issue on GitHub</a> with what you did, what you expected, and the server log.
           </p>
         </div>
       )
@@ -1094,6 +1700,8 @@ export const WikiPage = () => {
       id: 'port-forwarding',
       title: 'Router Port Forwarding Guide',
       category: 'Networking & Multiplayer',
+      summary: "Forward your router's ports so friends outside your network can join.",
+      sections: [],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-cobalt/10 border border-accent-cobalt/20 text-accent-cobalt text-xs font-semibold mb-4">
@@ -1176,6 +1784,7 @@ export const WikiPage = () => {
                 <li>
                   <strong>Linux (UFW):</strong> Run:
                   <CodeBlock code="sudo ufw allow 25565/tcp" language="bash" />
+                  For a Bedrock server or cross-play, also allow its UDP port, for example <code>sudo ufw allow 19132/udp</code>.
                 </li>
               </ul>
             </div>
@@ -1206,6 +1815,8 @@ export const WikiPage = () => {
       id: 'tunneling-alternatives',
       title: 'Playit.gg, Tailscale & No-Port-Forward Options',
       category: 'Networking & Multiplayer',
+      summary: "Playit.gg, Tailscale, and ngrok for hosting without port forwarding.",
+      sections: [],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs font-semibold mb-4">
@@ -1304,6 +1915,8 @@ export const WikiPage = () => {
       id: 'dev-setup',
       title: 'Development Environment Guide',
       category: 'Development',
+      summary: "Run Isopod from source with hot reloading.",
+      sections: [{ id: 'cross-origin', title: 'Cross-Origin Requests' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-400/10 border border-purple-400/20 text-purple-400 text-xs font-semibold mb-4">
@@ -1344,6 +1957,15 @@ export const WikiPage = () => {
           <Alert type="note">
             To work on CurseForge modpacks, put <code>CURSEFORGE_API_KEY=&apos;your-key&apos;</code> in a <code>.env</code> file in the repository root (in single quotes, keys contain <code>$</code>). Both dev compose files pass it into the container, and the backend reads it when you run it directly.
           </Alert>
+
+          <h2 id="cross-origin" className="text-2xl font-bold text-white mt-10 mb-4">Cross-Origin Requests</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The backend serves the dashboard from its own origin, so it rejects changes (<code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code>) and WebSocket connections that come from another site. Requests without an <code>Origin</code> header, such as <code>curl</code> and scripts, are not affected.
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li><code>ISOPOD_CORS_ORIGINS</code>: comma-separated extra origins to allow, if you host a separate frontend.</li>
+            <li><code>VITE_API_PROXY</code>: where the Vite dev server proxies <code>/api</code> (default <code>http://localhost:8000</code>).</li>
+          </ul>
         </div>
       )
     },
@@ -1351,6 +1973,8 @@ export const WikiPage = () => {
       id: 'project-standards',
       title: 'Project Organization & Standards',
       category: 'Development',
+      summary: "Repository layout, coding standards, and keeping the wiki current.",
+      sections: [{ id: 'wiki', title: 'Keeping the Wiki Current' }],
       content: () => (
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-400/10 border border-purple-400/20 text-purple-400 text-xs font-semibold mb-4">
@@ -1381,24 +2005,83 @@ export const WikiPage = () => {
             <li><strong>Strict Typing:</strong> All new frontend components must feature comprehensive TypeScript interfaces.</li>
             <li><strong>Docstring Integrity:</strong> Backend Python functions and route handlers must preserve clear docstrings detailing parameter schemas.</li>
           </ul>
+
+          <h2 id="wiki" className="text-2xl font-bold text-white mt-10 mb-4">Keeping the Wiki Current</h2>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            Every change that affects what users see or configure updates this wiki in the same piece of work: new features, changed behavior, new settings, new platforms or server types, new error messages or limitations, and workarounds for known problems. Small bug fixes and internal changes (refactors, dependency bumps, tests) are exempt.
+          </p>
+          <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
+            <li>The wiki lives in <code>src/WikiPage.tsx</code> of the <a href="https://github.com/Isopod-Project/Isopod-Website" target="_blank" rel="noopener noreferrer" className="text-accent-emerald hover:underline">Isopod-Website</a> repo. Open a PR there and link it from the Isopod PR.</li>
+            <li>Lay out articles as: what it is, how to use or set it up, then troubleshooting or limitations.</li>
+            <li>Give every section heading an <code>id</code> and list it in the article&apos;s <code>sections</code> so search and the index find it.</li>
+            <li>Never rename or remove an article or section id. The dashboard&apos;s help buttons link to them.</li>
+            <li>A new dashboard area gets a help topic in <code>frontend/src/components/HelpButton.tsx</code>.</li>
+          </ul>
+          <p className="text-text-secondary leading-relaxed mb-4">
+            The full rule is in <code>docs/agents/wiki.md</code> in the Isopod repo.
+          </p>
         </div>
       )
     }
   ];
 
-  const categories = [
-    'Getting Started',
-    'Using the Dashboard',
-    'Networking & Multiplayer',
-    'Development'
-  ];
-
   const activeArticle = articles.find(a => a.id === activeArticleId) || articles[0];
 
-  const filteredArticles = articles.filter(a => {
-    const q = searchQuery.toLowerCase();
-    return a.title.toLowerCase().includes(q) || a.category.toLowerCase().includes(q);
-  });
+  // Search matches article titles, categories, summaries, and section titles.
+  // Section hits are listed under their article so a click jumps straight to them.
+  const query = searchQuery.trim().toLowerCase();
+  const searchResults = articles
+    .map(a => {
+      const articleHit = !query || matches(a.title, query) || matches(a.category, query) || matches(a.summary, query);
+      const sectionHits = query ? a.sections.filter(sec => matches(sec.title, query)) : [];
+      return { article: a, articleHit, sectionHits };
+    })
+    .filter(r => r.articleHit || r.sectionHits.length > 0);
+
+  const openSection = (articleId: string, sectionId: string) =>
+    navigate({ view: 'wiki', articleId, sectionId });
+
+  const renderResults = (onPick: () => void, compact: boolean) => (
+    CATEGORIES.map(cat => {
+      const catResults = searchResults.filter(r => r.article.category === cat);
+      if (catResults.length === 0) return null;
+      const isExpanded = query !== '' || (expandedCategories[cat] ?? true);
+      return (
+        <div key={cat} className="space-y-1">
+          <button
+            onClick={() => toggleCategory(cat)}
+            className="w-full flex items-center justify-between text-left text-xs uppercase tracking-widest font-extrabold text-text-secondary mb-2 px-1 hover:text-white transition-colors cursor-pointer"
+          >
+            <span>{cat}</span>
+            {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
+          {isExpanded && (
+            <div className={`space-y-0.5 flex flex-col ${compact ? '' : 'pl-1 border-l border-white/5'}`}>
+              {catResults.map(({ article: art, sectionHits }) => (
+                <React.Fragment key={art.id}>
+                  <button
+                    onClick={() => { setActiveArticleId(art.id); onPick(); }}
+                    className={`text-left py-2 px-3 rounded-lg text-sm transition-all cursor-pointer ${activeArticleId === art.id ? 'bg-accent-emerald/10 text-accent-emerald border-l-2 border-accent-emerald rounded-l-none font-bold pl-4' : 'text-text-secondary hover:text-white hover:pl-4'}`}
+                  >
+                    {art.title}
+                  </button>
+                  {sectionHits.map(sec => (
+                    <button
+                      key={sec.id}
+                      onClick={() => { openSection(art.id, sec.id); onPick(); }}
+                      className="text-left py-1 pl-7 pr-3 rounded-lg text-xs text-text-secondary hover:text-accent-emerald transition-colors cursor-pointer"
+                    >
+                      ↳ {sec.title}
+                    </button>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    })
+  );
 
   return (
     <div className="max-w-7xl mx-auto pt-32 pb-24 px-6 min-h-[calc(100vh-200px)]">
@@ -1429,32 +2112,12 @@ export const WikiPage = () => {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search documentation..."
+                  placeholder="Search articles and sections..."
                   className="w-full pl-10 pr-4 py-2 rounded-lg bg-[#1D1D1D] border border-white/5 text-sm text-white focus:outline-none focus:border-accent-emerald transition-colors"
                 />
               </div>
 
-              {categories.map(cat => {
-                const catArticles = filteredArticles.filter(a => a.category === cat);
-                if (catArticles.length === 0) return null;
-                return (
-                  <div key={cat} className="space-y-1">
-                    <div className="text-xs uppercase tracking-wider font-bold text-text-secondary mb-1 px-2">{cat}</div>
-                    {catArticles.map(art => (
-                      <button
-                        key={art.id}
-                        onClick={() => {
-                          setActiveArticleId(art.id);
-                          setMobileDrawerOpen(false);
-                        }}
-                        className={`w-full text-left py-2 px-3 rounded-lg text-sm transition-all cursor-pointer ${activeArticleId === art.id ? 'bg-accent-emerald/10 text-accent-emerald font-bold' : 'text-text-secondary hover:text-white'}`}
-                      >
-                        {art.title}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })}
+              {renderResults(() => setMobileDrawerOpen(false), true)}
             </motion.div>
           )}
         </div>
@@ -1467,41 +2130,13 @@ export const WikiPage = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search docs..."
+              placeholder="Search articles and sections..."
               className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#1D1D1D] border border-white/5 text-xs text-white focus:outline-none focus:border-accent-emerald transition-colors"
             />
           </div>
 
           <div className="space-y-6">
-            {categories.map(cat => {
-              const catArticles = filteredArticles.filter(a => a.category === cat);
-              if (catArticles.length === 0) return null;
-              const isExpanded = expandedCategories[cat] ?? true;
-              return (
-                <div key={cat} className="space-y-1">
-                  <button
-                    onClick={() => toggleCategory(cat)}
-                    className="w-full flex items-center justify-between text-left text-xs uppercase tracking-widest font-extrabold text-text-secondary mb-2 px-1 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <span>{cat}</span>
-                    {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  </button>
-                  {isExpanded && (
-                    <div className="space-y-0.5 pl-1 border-l border-white/5 flex flex-col">
-                      {catArticles.map(art => (
-                        <button
-                          key={art.id}
-                          onClick={() => setActiveArticleId(art.id)}
-                          className={`text-left py-2 px-3 rounded-lg text-sm transition-all cursor-pointer ${activeArticleId === art.id ? 'bg-accent-emerald/10 text-accent-emerald border-l-2 border-accent-emerald rounded-l-none font-bold pl-4' : 'text-text-secondary hover:text-white hover:pl-4'}`}
-                        >
-                          {art.title}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+            {renderResults(() => {}, false)}
           </div>
         </div>
 
