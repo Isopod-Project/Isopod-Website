@@ -1197,7 +1197,7 @@ services:
             Bedrock calls the whitelist the <strong>allowlist</strong>. Manage it in the <strong>User Management</strong> tab:
           </p>
           <ul className="list-disc pl-6 space-y-2 text-text-secondary mb-6">
-            <li>Add players by Xbox gamertag. Spaces are fine, for example <code>Tacoz YouTube</code>.</li>
+            <li>Add players by Xbox gamertag. Spaces are fine, for example <code>Blocky Builder</code>.</li>
             <li>Turn the allowlist on or off, and set each player to <strong>Member</strong> or <strong>Operator</strong>.</li>
             <li>Changes reach a running server straight away, except that a new operator who isn&apos;t online gets operator powers at the next start.</li>
             <li>Bedrock has no ban command, so there&apos;s no Banned Players list. To keep someone out, turn the allowlist on and remove them from it.</li>
