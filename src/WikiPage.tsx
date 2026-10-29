@@ -710,6 +710,9 @@ services:
             <li><strong>Everything else</strong> (version, loader, world, configuration) waits for <strong>Save Changes</strong>. The sidebar shows <strong>Unsaved Changes</strong> while something is waiting.</li>
             <li>Closing the window with anything unsaved asks <strong>Discard N unsaved changes?</strong> Choose <strong>Keep editing</strong> to go back and save.</li>
           </ul>
+          <Callout type="tip">
+            Press <strong>Esc</strong> or click the dimmed area outside a window to close it. Unsaved changes are still asked about first. On the Files and Mods tabs, <strong>Esc</strong> first cancels a rename or clears the selection; press it again to close. The Add Instance window closes with <strong>Esc</strong> but not with a click outside, so a stray click doesn&apos;t lose what you entered.
+          </Callout>
         </div>
       )
     },
@@ -1466,6 +1469,9 @@ services:
           <h1>Dashboard Settings</h1>
           <p className="lead">
             Open <strong>Settings</strong> from the dashboard header to configure Isopod itself, plus the defaults used for new servers.
+          </p>
+          <p>
+            Changes take effect when you click <strong>Save Settings</strong>. Closing Settings any other way (<strong>Discard Changes</strong>, the X, <strong>Esc</strong>, or a click outside) puts back anything you changed, including a theme you were trying out.
           </p>
 
           <h2 id="general">
