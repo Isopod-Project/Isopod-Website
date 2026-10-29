@@ -9,7 +9,7 @@ const GITHUB_URL = 'https://github.com/Isopod-Project/Isopod'
 const NAV: { view: View, label: string }[] = [
   { view: 'landing', label: 'Home' },
   { view: 'wiki', label: 'Wiki' },
-  { view: 'downloads', label: 'Download' },
+  { view: 'downloads', label: 'Install' },
 ]
 
 const THEMES: { id: ThemePreference, label: string, icon: typeof Sun }[] = [
