@@ -1545,15 +1545,21 @@ services:
             <RefreshCw /> Updates
           </h2>
           <p>
-            Compare your installed Isopod version with the latest release and read its release notes. Isopod can&apos;t rebuild itself from inside its container, so on a standard install, run these on the machine hosting it, in the folder you cloned Isopod into:
+            Compare your installed Isopod version with the latest release, read its release notes, and click <strong>Update Now</strong> to install it. Running servers save and stop first, and servers set to restart come back afterwards. A progress bar follows the update, and Isopod reloads once the new version is running.
+          </p>
+          <p>
+            If the new version fails to start, Isopod goes back to the one you had and tells you in this tab.
+          </p>
+          <p>
+            Some releases change the container itself, and installs from before v0.5.0 don&apos;t have this updater yet. In those cases the tab shows these commands instead, to run on the machine hosting Isopod, in the folder you cloned it into:
           </p>
           <CodeBlock code={`git pull
 docker compose -f isopod-compose.yml up -d --build`} language="bash" />
           <p>
-            On macOS, leave out <code>-f isopod-compose.yml</code>. Your servers and worlds are kept. <strong>Update Now</strong> only appears on setups where Isopod can run the update itself, such as development installs that have the compose file.
+            On macOS, leave out <code>-f isopod-compose.yml</code>. Your servers and worlds are kept.
           </p>
           <Callout type="warning">
-            Versions before v0.4.1 show <strong>Update Now</strong> on every install. There it only restarts the old version, even though the dashboard then reports the new one, so use the commands above.
+            Versions before v0.4.1 show <strong>Update Now</strong> on every install, but there it only restarts the old version, even though the dashboard then reports the new one. Use the commands above.
           </Callout>
           <h2 id="advanced">
             <Lock /> Advanced
