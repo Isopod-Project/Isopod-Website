@@ -317,7 +317,7 @@ export const WikiPage = () => {
       title: 'Quick Start Guide',
       category: 'Getting Started',
       summary: "Clone Isopod, start it with Docker Compose, and open the dashboard. Includes macOS and Windows steps.",
-      sections: [{ id: 'install', title: 'Install & Launch' }, { id: 'macos', title: 'Running on macOS' }, { id: 'windows', title: 'Windows Start Script' }, { id: 'lifecycle', title: 'Lifecycle Commands' }, { id: 'security', title: 'Keep the Dashboard Private' }],
+      sections: [{ id: 'install', title: 'Install & Launch' }, { id: 'macos', title: 'Running on macOS' }, { id: 'windows', title: 'Windows Start Script' }, { id: 'lifecycle', title: 'Lifecycle Commands' }, { id: 'login', title: 'Logging In' }, { id: 'security', title: 'Keep the Dashboard Private' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -413,9 +413,18 @@ export const WikiPage = () => {
             Hosting Isopod on a dedicated home server or remote VPS? Access the dashboard using your server's local LAN address (e.g., <code>http://192.168.1.150:8000</code>).
           </Callout>
 
+          <h2 id="login">🔐 Logging In</h2>
+          <p>
+            The first time you open the dashboard, Isopod asks you to create the admin account. Open it right after you start Isopod: until the account exists, anyone who can reach port <code>8000</code> can create it. After that, every visit needs a login, and sessions last 30 days.
+          </p>
+          <ul>
+            <li>To change the password or log out, open <strong>Settings &rarr; Account</strong>. Changing the password logs out every other browser.</li>
+            <li>Forgot the password? Delete <code>.isopod_auth.json</code> from your servers folder (<code>/DATA/AppData/isopod/servers</code> on CasaOS, <code>data/servers</code> on macOS) and reload the dashboard to set up the account again. Your servers aren&apos;t affected.</li>
+          </ul>
+
           <h2 id="security">🔒 Keep the Dashboard Private</h2>
           <p>
-            The dashboard has no login yet, and the Isopod container runs privileged so it can run its own Docker engine. Anyone who can open port <code>8000</code> can control your servers. Keep it on your local network or behind a VPN such as <a href="#/wiki/tunneling-alternatives">Tailscale</a>, and only forward your Minecraft ports.
+            Isopod serves plain HTTP and controls Docker on its host, so anyone who gets into the dashboard effectively controls that machine. Keep port <code>8000</code> on your local network or behind a VPN such as <a href="#/wiki/tunneling-alternatives">Tailscale</a>, and only forward your Minecraft ports.
           </p>
         </div>
       )
@@ -461,7 +470,16 @@ services:
   isopod:
     image: isopod:latest
     container_name: isopod
-    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - NET_ADMIN
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    devices:
+      - /dev/fuse
+    cgroup: private
     restart: unless-stopped
     network_mode: bridge
     ports:
@@ -484,7 +502,7 @@ services:
           <Table
             headers={['Setting', 'Value', 'Why']}
             rows={[
-              ['Privileged Mode', 'Enabled', 'Isopod runs its own Docker engine inside the container to run each Minecraft server.'],
+              ['Privileged Mode', 'Disabled', 'Isopod runs its own Docker engine inside the container using the capabilities, security options, device, and private cgroup namespace in the compose file above. The CasaOS form may not show them all, so use the import when you can.'],
               ['Web UI Port', '8000 → 8000', 'The dashboard.'],
               ['Game Server Ports (TCP)', '25565-25585 → 25565-25585', 'Java servers. Allows up to 21 servers at once.'],
               ['Bedrock Ports (UDP)', '19132-19152 → 19132-19152', 'Bedrock servers and Java servers with Bedrock cross-play.'],
