@@ -966,7 +966,7 @@ services:
             ]}
           />
           <p>
-            If a command fails, it stays in the input box so you can fix and retry it, and the console adds an <code>[Isopod] Command failed</code> line saying why. On Bedrock servers, command output appears in the log rather than under the input box.
+            If a command fails, it stays in the input box so you can fix and retry it, and the console adds an <code>[Isopod] Command failed</code> line saying why.
           </p>
 
           <h2 id="log-controls">
@@ -1066,7 +1066,7 @@ services:
               ['Paper', 'Paper, Spigot, and Bukkit plugins', 'Fast servers with plugins.'],
               ['Purpur', 'The same plugins as Paper, plus Purpur-only ones', 'Paper with extra gameplay and config options.'],
               ['Folia', 'Folia-compatible plugins only', 'Very large servers on machines with many CPU cores.'],
-              ['Bedrock', 'No mods or plugins', 'Phone, console, and Windows players. See Bedrock Edition.']
+              ['Bedrock', 'Add-ons (no Java mods or plugins)', 'Phone, console, and Windows players. See Bedrock Edition.']
             ]}
           />
           <p>
@@ -1097,7 +1097,7 @@ services:
       title: 'Bedrock Edition & Cross-play',
       category: 'Servers',
       summary: "Host players on phones, consoles, and Windows: run a Bedrock server, or let Bedrock players join a Java server.",
-      sections: [{ id: 'bedrock-server', title: 'Running a Bedrock Server' }, { id: 'bedrock-allowlist', title: 'Allowlist & Operators' }, { id: 'bedrock-console', title: 'Console & Backups' }, { id: 'cross-play-setup', title: 'Cross-play on a Java Server' }, { id: 'bedrock-ports', title: 'Ports' }, { id: 'bedrock-limits', title: 'Limitations' }],
+      sections: [{ id: 'bedrock-server', title: 'Running a Bedrock Server' }, { id: 'bedrock-allowlist', title: 'Allowlist & Operators' }, { id: 'bedrock-addons', title: 'Add-ons' }, { id: 'bedrock-console', title: 'Console & Backups' }, { id: 'cross-play-setup', title: 'Cross-play on a Java Server' }, { id: 'bedrock-ports', title: 'Ports' }, { id: 'bedrock-limits', title: 'Limitations' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -1134,11 +1134,29 @@ services:
             <li>Bedrock has no ban command, so there&apos;s no Banned Players list. To keep someone out, turn the allowlist on and remove them from it.</li>
           </ul>
 
+          <h2 id="bedrock-addons">
+            <Box /> Add-ons
+          </h2>
+          <p>
+            On a Bedrock server, the <strong>Mods</strong> tab is called <strong>Add-ons</strong>. Click <strong>Add File</strong> and pick a <code>.mcpack</code> or <code>.mcaddon</code>. Isopod installs its behavior packs, plus any resource packs a <code>.mcaddon</code> brings with them, and turns them on for the world.
+          </p>
+          <ul>
+            <li>Each add-on shows its name, version, and type. Switch one off to keep it installed but unused, or remove it to delete it.</li>
+            <li>Changes apply the next time the server starts.</li>
+            <li>Isopod takes a snapshot before each change, so you can roll it back.</li>
+          </ul>
+          <Callout type="note">
+            Add-ons marked <strong>Uses experimental Beta APIs</strong> only work in a world that has the Beta APIs experiment on. Experiments are set when a world is created in the game, so turn it on there and upload that world.
+          </Callout>
+          <p>
+            Files that aren&apos;t valid add-ons, or that try to write outside their folder, are rejected with the reason. Marketplace content is encrypted and can&apos;t be installed.
+          </p>
+
           <h2 id="bedrock-console">
             <Terminal /> Console &amp; Backups
           </h2>
           <ul>
-            <li>Console commands work, but their output shows up in the log rather than under the input box.</li>
+            <li>Console commands show their replies in the console, the same as on Java.</li>
             <li>Backups and snapshots include the <code>worlds</code> folder. While the server is running, Isopod pauses saving for a few seconds so the copy is consistent.</li>
           </ul>
 
@@ -1173,8 +1191,8 @@ services:
             <AlertTriangle /> Limitations
           </h2>
           <ul>
-            <li>Bedrock servers can&apos;t run Java mods or plugins, so the Edit window has no <strong>Loaders</strong>, <strong>Mods</strong>, or <strong>Resource Packs</strong> tab. Bedrock add-ons and resource packs aren&apos;t supported yet.</li>
-            <li>The online player list isn&apos;t available for Bedrock servers yet.</li>
+            <li>Bedrock servers can&apos;t run Java mods or plugins, so the Edit window has no <strong>Loaders</strong> or <strong>Resource Packs</strong> tab. Use <a href="#/wiki/bedrock/bedrock-addons">Add-ons</a> instead.</li>
+            <li>The online player list and player count work, but the side panel only lists names. Kick, message, and teleport need RCON, which Bedrock doesn&apos;t have.</li>
             <li><a href="#/wiki/server-tuning/sleep">Sleep when empty</a> isn&apos;t available.</li>
             <li>Saving a Bedrock server adds unused <code>RESOURCE_PACK_ID</code> and <code>CUSTOM_SERVER_PROPERTIES</code> entries to its raw environment variables. Bedrock ignores them, so you can leave them alone.</li>
           </ul>
@@ -1411,7 +1429,7 @@ services:
             <li><strong>Kick</strong> and <strong>Ban</strong></li>
           </ul>
           <p>
-            The same actions appear on each player row in User Management, with <strong>ONLINE</strong> and <strong>BANNED</strong> badges. Not available on Bedrock servers yet.
+            The same actions appear on each player row in User Management, with <strong>ONLINE</strong> and <strong>BANNED</strong> badges. On Bedrock servers the side panel only lists names, because these actions need RCON.
           </p>
 
           <h2 id="bans">
@@ -1614,7 +1632,7 @@ services:
               [<>Bedrock players can&apos;t join</>, <>Check that the UDP ports 19132-19152 are in your compose file. See <a href="#/wiki/bedrock/bedrock-ports">Bedrock Ports</a>.</>],
               [<><code>mounts denied</code> on a Mac</>, <>Do the one-time <a href="#/wiki/getting-started/macos">macOS setup</a> and run <code>docker compose</code> without <code>-f</code>.</>],
               [<>CurseForge says &quot;Couldn&apos;t load modpacks&quot;</>, <>See the table in <a href="#/wiki/dashboard-guide/curseforge-modpacks">CurseForge Modpacks</a>.</>],
-              [<>A console command does nothing</>, <>A failed command stays in the input box with the reason in the log. Bedrock servers print replies in the log.</>]
+              [<>A console command does nothing</>, <>A failed command stays in the input box with the reason in the log.</>]
             ]}
           />
 
