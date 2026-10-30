@@ -1548,7 +1548,7 @@ services:
             Compare your installed Isopod version with the latest release and read its release notes. Isopod can&apos;t rebuild itself from inside its container, so on a standard install, run these on the machine hosting it, in the folder you cloned Isopod into:
           </p>
           <CodeBlock code={`git pull
-docker compose -f isopod-compose.yml up -d --build`} />
+docker compose -f isopod-compose.yml up -d --build`} language="bash" />
           <p>
             On macOS, leave out <code>-f isopod-compose.yml</code>. Your servers and worlds are kept. <strong>Update Now</strong> only appears on setups where Isopod can run the update itself, such as development installs that have the compose file.
           </p>
