@@ -1097,7 +1097,7 @@ services:
       title: 'Bedrock Edition & Cross-play',
       category: 'Servers',
       summary: "Host players on phones, consoles, and Windows: run a Bedrock server, or let Bedrock players join a Java server.",
-      sections: [{ id: 'bedrock-server', title: 'Running a Bedrock Server' }, { id: 'bedrock-allowlist', title: 'Allowlist & Operators' }, { id: 'bedrock-addons', title: 'Add-ons' }, { id: 'bedrock-console', title: 'Console & Backups' }, { id: 'cross-play-setup', title: 'Cross-play on a Java Server' }, { id: 'bedrock-ports', title: 'Ports' }, { id: 'bedrock-limits', title: 'Limitations' }],
+      sections: [{ id: 'bedrock-server', title: 'Running a Bedrock Server' }, { id: 'bedrock-allowlist', title: 'Allowlist & Operators' }, { id: 'bedrock-addons', title: 'Add-ons' }, { id: 'bedrock-resource-packs', title: 'Resource Packs' }, { id: 'bedrock-console', title: 'Console & Backups' }, { id: 'cross-play-setup', title: 'Cross-play on a Java Server' }, { id: 'bedrock-ports', title: 'Ports' }, { id: 'bedrock-limits', title: 'Limitations' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -1138,7 +1138,7 @@ services:
             <Box /> Add-ons
           </h2>
           <p>
-            On a Bedrock server, the <strong>Mods</strong> tab is called <strong>Add-ons</strong>. Click <strong>Add File</strong> and pick a <code>.mcpack</code> or <code>.mcaddon</code>. Isopod installs its behavior packs, plus any resource packs a <code>.mcaddon</code> brings with them, and turns them on for the world.
+            On a Bedrock server, the <strong>Mods</strong> tab is called <strong>Add-ons</strong>. Click <strong>Add File</strong> and pick a <code>.mcpack</code> or <code>.mcaddon</code>. Isopod installs its behavior packs, plus any resource packs a <code>.mcaddon</code> brings with them, and turns them on for the world. Those resource packs are listed in the <a href="#/wiki/bedrock/bedrock-resource-packs">Resource Packs</a> tab.
           </p>
           <ul>
             <li>Each add-on shows its name, version, and type. Switch one off to keep it installed but unused, or remove it to delete it.</li>
@@ -1151,6 +1151,24 @@ services:
           <p>
             Files that aren&apos;t valid add-ons, or that try to write outside their folder, are rejected with the reason. Marketplace content is encrypted and can&apos;t be installed.
           </p>
+
+          <h2 id="bedrock-resource-packs">
+            <Layers /> Resource Packs
+          </h2>
+          <p>
+            A Bedrock server&apos;s <strong>Resource Packs</strong> tab installs texture and sound packs from <code>.mcpack</code> files. Players download them when they join.
+          </p>
+          <ol>
+            <li>Click <strong>Add File</strong> and pick a resource pack <code>.mcpack</code>.</li>
+            <li>Isopod installs it and turns it on for the world.</li>
+            <li>Restart the server. Players get the pack the next time they join.</li>
+          </ol>
+          <ul>
+            <li><strong>Require pack</strong> makes players accept the server&apos;s resource packs to join. When it&apos;s off, players are asked and can decline. Press <strong>Save Changes</strong> to keep it.</li>
+            <li>Switch a pack off to keep it installed but unused, or remove it to delete its files.</li>
+            <li>Behavior packs and <code>.mcaddon</code> files are refused here. Install them from <a href="#/wiki/bedrock/bedrock-addons">Add-ons</a>.</li>
+            <li>Java servers keep their own Resource Packs tab, which downloads packs from Modrinth. See <a href="#/wiki/mod-management/resource-packs">Server Resource Packs</a>.</li>
+          </ul>
 
           <h2 id="bedrock-console">
             <Terminal /> Console &amp; Backups
@@ -1191,7 +1209,7 @@ services:
             <AlertTriangle /> Limitations
           </h2>
           <ul>
-            <li>Bedrock servers can&apos;t run Java mods or plugins, so the Edit window has no <strong>Loaders</strong> or <strong>Resource Packs</strong> tab. Use <a href="#/wiki/bedrock/bedrock-addons">Add-ons</a> instead.</li>
+            <li>Bedrock servers can&apos;t run Java mods or plugins, so the Edit window has no <strong>Loaders</strong> tab. Use <a href="#/wiki/bedrock/bedrock-addons">Add-ons</a> and <a href="#/wiki/bedrock/bedrock-resource-packs">Resource Packs</a> instead.</li>
             <li>The online player list and player count work, but the side panel only lists names. Kick, message, and teleport need RCON, which Bedrock doesn&apos;t have.</li>
             <li><a href="#/wiki/server-tuning/sleep">Sleep when empty</a> isn&apos;t available.</li>
             <li>Saving a Bedrock server adds unused <code>RESOURCE_PACK_ID</code> and <code>CUSTOM_SERVER_PROPERTIES</code> entries to its raw environment variables. Bedrock ignores them, so you can leave them alone.</li>
