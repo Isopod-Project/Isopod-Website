@@ -4,6 +4,7 @@ import { useRoute } from './route'
 import { Callout, CodeBlock, RouteLink, Table } from './ui'
 import {
   Layers,
+  Flame,
   Terminal,
   ShieldCheck,
   RefreshCw,
@@ -406,7 +407,7 @@ export const WikiPage = () => {
           />
 
           <Callout type="note">
-            Want to create servers from <strong>CurseForge</strong> modpacks? CurseForge needs a free API key. Add <code>CURSEFORGE_API_KEY='your-key'</code> to a <code>.env</code> file next to <code>isopod-compose.yml</code> and run the launch command again. See <a href="#/wiki/dashboard-guide/curseforge-modpacks">CurseForge Modpacks</a> for the full steps.
+            Want CurseForge modpacks or mods? CurseForge needs a free API key. Add <code>CURSEFORGE_API_KEY='your-key'</code> to a <code>.env</code> file next to <code>isopod-compose.yml</code> and run the launch command again. See <a href="#/wiki/dashboard-guide/curseforge-modpacks">CurseForge Modpacks</a> for the full steps.
           </Callout>
 
           <Callout type="tip">
@@ -514,7 +515,7 @@ services:
           />
 
           <Callout type="note">
-            <code>CURSEFORGE_API_KEY</code> is only needed for CurseForge modpacks. Get a free key at <a href="https://console.curseforge.com" target="_blank" rel="noopener noreferrer">console.curseforge.com</a>. Docker Compose treats <code>$</code> as the start of a variable, and CurseForge keys contain several, so write each <code>$</code> in the key as <code>$$</code> when you paste it into the YAML.
+            <code>CURSEFORGE_API_KEY</code> is only needed for CurseForge modpacks and mods. Get a free key at <a href="https://console.curseforge.com" target="_blank" rel="noopener noreferrer">console.curseforge.com</a>. Docker Compose treats <code>$</code> as the start of a variable, and CurseForge keys contain several, so write each <code>$</code> in the key as <code>$$</code> when you paste it into the YAML.
           </Callout>
 
           <Callout type="tip">
@@ -678,7 +679,7 @@ services:
             ]}
           />
           <Callout type="note">
-            CurseForge support covers <strong>modpacks</strong>. The Mods and Resource Packs tabs still search Modrinth only.
+            The same key lets you add single CurseForge mods in the Mods tab, see <a href="#/wiki/mod-management/curseforge-mods">CurseForge Mods</a>. The Resource Packs tab still searches Modrinth only.
           </Callout>
           <Callout type="warning">
             Keep your key private. Isopod only sends it to <code>api.curseforge.com</code> and passes it to the server container as an environment variable. It is not written to the instance&apos;s <code>docker-compose.yml</code>.
@@ -736,10 +737,10 @@ services:
     },
     {
       id: 'mod-management',
-      title: 'Mods & Resource Packs (Modrinth)',
+      title: 'Mods & Resource Packs',
       category: 'Mods & Players',
-      summary: "Install mods and plugins from Modrinth, manage several at once, and serve resource packs.",
-      sections: [{ id: 'installing-mods', title: 'Installing Mods' }, { id: 'managing-mods', title: 'Managing Installed Mods' }, { id: 'multi-select', title: 'Selecting Multiple Mods' }, { id: 'modpack-mods', title: 'Modpack Mods' }, { id: 'plugins', title: 'Plugins' }, { id: 'resource-packs', title: 'Server Resource Packs' }],
+      summary: "Install mods and plugins from Modrinth or CurseForge, manage several at once, and serve resource packs.",
+      sections: [{ id: 'installing-mods', title: 'Installing Mods' }, { id: 'curseforge-mods', title: 'CurseForge Mods' }, { id: 'managing-mods', title: 'Managing Installed Mods' }, { id: 'multi-select', title: 'Selecting Multiple Mods' }, { id: 'modpack-mods', title: 'Modpack Mods' }, { id: 'plugins', title: 'Plugins' }, { id: 'resource-packs', title: 'Server Resource Packs' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -747,7 +748,7 @@ services:
           </div>
           <h1>Mods & Resource Packs</h1>
           <p className="lead">
-            Isopod connects directly to the <strong>Modrinth</strong> platform, giving you instant access to thousands of open-source Minecraft mods, plugins, and server optimization tools without leaving your browser.
+            Isopod connects directly to <strong>Modrinth</strong> and <strong>CurseForge</strong>, giving you access to thousands of Minecraft mods, plugins, and server optimization tools without leaving your browser.
           </p>
 
           <h2 id="installing-mods">
@@ -769,7 +770,7 @@ services:
               <span className="badge badge-accent">DEP RESOLVER</span>
               <h3 className="text-sm">Auto Dependencies</h3>
               <p className="text-xs text-fg-muted">
-                When installing a mod (such as <em>Lithium</em> or <em>FerriteCore</em>), Isopod checks Modrinth for required libraries (e.g. <em>Fabric API</em>) and installs them automatically.
+                When installing a mod (such as <em>Lithium</em> or <em>FerriteCore</em>), Isopod looks up the libraries it requires (e.g. <em>Fabric API</em>) and installs them automatically.
               </p>
             </div>
             <div className="card">
@@ -784,6 +785,31 @@ services:
           <p>
             Click <strong>Add</strong> (or <strong>Add with Deps</strong> to include required libraries) next to a search result. The mod downloads straight away and shows <strong>Installing...</strong> until it&apos;s done. Every change in the Mods tab applies immediately; there is nothing to save. Isopod takes a <a href="#/wiki/backups/snapshots">snapshot</a> first, so you can roll back if a mod breaks the server.
           </p>
+
+          <h2 id="curseforge-mods">
+            <Flame /> CurseForge Mods
+          </h2>
+          <p>
+            Mod search starts on Modrinth. Switch the source at the top right of <strong>Download Mods</strong> to <strong>CurseForge</strong> to search CurseForge instead, which has many Forge mods and older mods that aren&apos;t on Modrinth. On Paper, Purpur, and Folia it searches CurseForge&apos;s Bukkit plugins. CurseForge needs a free API key, set up the same way as for <a href="#/wiki/dashboard-guide/curseforge-modpacks">CurseForge Modpacks</a>.
+          </p>
+          <ol>
+            <li>Open the server&apos;s Edit window, go to <strong>Mods</strong>, and click <strong>Download Mods</strong>.</li>
+            <li>Click <strong>CurseForge</strong> at the top right. Results are filtered to the server&apos;s Minecraft version and loader.</li>
+            <li>Click <strong>Add</strong> for just that mod, or <strong>Add with Deps</strong> to also install every mod it requires (such as <em>Cloth Config</em> or <em>Architectury</em>) and the mods those need.</li>
+          </ol>
+          <p>
+            Isopod downloads the newest file that fits the server&apos;s version and loader right away. Quilt servers fall back to Fabric files and NeoForge servers to Forge files. The server keeps CurseForge mods up to date each time it starts. Enable, disable, and remove them like any other mod.
+          </p>
+          <Table
+            headers={['Problem', 'What it means']}
+            rows={[
+              ['Search fails with CURSEFORGE_API_KEY is not set', <>The key never reached Isopod. Follow the steps in <a href="#/wiki/dashboard-guide/curseforge-modpacks">CurseForge Modpacks</a> and restart Isopod.</>],
+              ['The server crashes after adding a CurseForge mod', 'It may be client-only. Isopod hides mods CurseForge tags as client-only, but not every author tags their files. Remove the mod, or check its page to see if it runs on servers.'],
+              ['A result says "CurseForge app only"', <>The author blocks downloads outside the CurseForge app, so Isopod can&apos;t install it. Download the jar yourself and use <strong>Add File</strong>.</>],
+              ['"Could not download yet" after adding a mod', 'The mod has no file for the server\'s Minecraft version and loader, or CurseForge didn\'t answer. Check the mod\'s page for a matching file.'],
+              ['"Couldn\'t look up what it needs" on Add with Deps', 'CurseForge didn\'t answer the dependency lookup. You can install the mod alone, then add its dependencies yourself.']
+            ]}
+          />
 
           <h2 id="managing-mods">📦 Managing Installed Mods</h2>
           <ul>
@@ -816,7 +842,7 @@ services:
 
           <h2 id="plugins">🔌 Plugins</h2>
           <p>
-            On Paper, Purpur, and Folia servers the Mods tab manages <strong>plugins</strong> in the <code>plugins</code> folder instead. Its header reads <strong>Plugins</strong>, and <strong>Download Plugins</strong> searches Modrinth for plugins that run on that server type. On Folia, only plugins marked Folia-compatible appear. See <a href="#/wiki/versions-loaders/loaders">Choosing a Server Type</a>.
+            On Paper, Purpur, and Folia servers the Mods tab manages <strong>plugins</strong> in the <code>plugins</code> folder instead. Its header reads <strong>Plugins</strong>, and <strong>Download Plugins</strong> searches Modrinth or CurseForge for plugins that run on that server type. On Folia, only plugins marked Folia-compatible appear. See <a href="#/wiki/versions-loaders/loaders">Choosing a Server Type</a>.
           </p>
 
           <h2 id="resource-packs">
@@ -831,7 +857,7 @@ services:
           </ul>
 
           <Callout type="note">
-            The Mods and Resource Packs tabs search Modrinth only. You can still create a server from a <strong>CurseForge</strong> modpack when you add an instance, see <a href="#/wiki/dashboard-guide/curseforge-modpacks">CurseForge Modpacks</a>. Bedrock servers have no Mods or Resource Packs tab, see <a href="#/wiki/bedrock/bedrock-limits">Bedrock limitations</a>.
+            The Resource Packs tab searches Modrinth only. The Mods tab can also search <a href="#/wiki/mod-management/curseforge-mods">CurseForge</a>. Bedrock servers have no Mods or Resource Packs tab, see <a href="#/wiki/bedrock/bedrock-limits">Bedrock limitations</a>.
           </Callout>
 
           <Callout type="tip">
@@ -1966,7 +1992,7 @@ docker compose -f isopod-compose.yml up -d --build`} language="bash" />
 
           <h2>Engineering Standards</h2>
           <ul>
-            <li><strong>Mod Provider Policy:</strong> Modrinth is the official mod repository integration, with full server-side dependency resolution. CurseForge is supported for modpacks only, through its official API with a user-supplied key. Send the key per request and only to <code>api.curseforge.com</code>.</li>
+            <li><strong>Mod Provider Policy:</strong> Modrinth is the official mod repository integration, with full server-side dependency resolution. CurseForge is supported for modpacks and single mods, through its official API with a user-supplied key. Send the key per request and only to <code>api.curseforge.com</code>.</li>
             <li><strong>Clean Root Directory:</strong> Do not commit temporary test files, local virtual environments, or scratch scripts to the root directory.</li>
             <li><strong>Strict Typing:</strong> All new frontend components must feature comprehensive TypeScript interfaces.</li>
             <li><strong>Docstring Integrity:</strong> Backend Python functions and route handlers must preserve clear docstrings detailing parameter schemas.</li>
