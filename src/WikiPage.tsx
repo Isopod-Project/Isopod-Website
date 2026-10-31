@@ -620,7 +620,7 @@ services:
           </p>
           <ul>
             <li><strong>Address:</strong> The address players join with. Click it to copy it. Servers with Bedrock players also show a <strong>Bedrock</strong> address (UDP).</li>
-            <li><strong>Launch / Stop / Kill:</strong> Stop saves the world first. Kill asks for confirmation, then powers the server off at once; only use it when the server is stuck. While a server starts or stops, a progress bar shows how far along it is.</li>
+            <li><strong>Start / Restart / Stop / Force Kill:</strong> The same controls appear in the Edit window&apos;s footer and the right-click menu. Stop saves the world first, and Restart does a Stop and then a Start. Force Kill asks for confirmation, then powers the server off at once; only use it when the server is stuck. While a server starts, a progress bar shows how far along it is when the server reports it. Otherwise, and while it stops or restarts, the bar slides with no percentage.</li>
             <li><strong>Update to &lt;version&gt;:</strong> Appears when a newer Minecraft release is out. See <a href="#/wiki/versions-loaders/update-world">Update World Button</a>.</li>
             <li><strong>Version</strong> and <strong>Last Activity</strong>.</li>
             <li><strong>CPU and RAM</strong> while the server runs. See <a href="#/wiki/monitoring/resource-usage">Resource Usage</a>.</li>
@@ -706,7 +706,7 @@ services:
             headers={['Action', 'What it does']}
             rows={[
               ['Rename / Change Icon', 'Change the name or picture shown on the dashboard.'],
-              ['Launch / Stop (Safe) / Kill (Unsafe)', 'Power controls. Stop saves the world; Kill does not.'],
+              ['Start / Restart / Stop / Force Kill', 'Power controls. Stop and Restart save the world; Force Kill does not.'],
               ['Edit...', 'Open the Edit window with all of the server\'s tabs.'],
               ['Change Group...', 'Move the server to another group.'],
               ['Folder', 'Open the server\'s files in the File Manager.'],
@@ -937,7 +937,7 @@ services:
       title: 'Live Console & RCON',
       category: 'Servers',
       summary: "Read live logs, send commands, and start, stop, or kill a server.",
-      sections: [{ id: 'console', title: 'Sending Commands' }, { id: 'log-controls', title: 'Log Viewer Controls' }, { id: 'power', title: 'Start, Stop & Kill' }],
+      sections: [{ id: 'console', title: 'Sending Commands' }, { id: 'log-controls', title: 'Log Viewer Controls' }, { id: 'power', title: 'Start, Restart, Stop & Force Kill' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -984,7 +984,7 @@ services:
           <h2 id="power">
             <Play /> Server Power Lifecycle
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
             <div className="card">
               <h3 className="text-sm">
                 <Play /> Start
@@ -995,7 +995,15 @@ services:
             </div>
             <div className="card">
               <h3 className="text-sm">
-                <RefreshCw /> Graceful Stop
+                <RefreshCw /> Restart
+              </h3>
+              <p className="text-xs text-fg-muted">
+                Does a Stop and then a Start, so the world saves first and the server picks up any changed settings.
+              </p>
+            </div>
+            <div className="card">
+              <h3 className="text-sm">
+                <RefreshCw /> Stop
               </h3>
               <p className="text-xs text-fg-muted">
                 Dispatches a <code>stop</code> command via RCON, allowing chunks to save cleanly to prevent world corruption.
@@ -1249,7 +1257,7 @@ services:
             <strong>Restart automatically</strong> in the Configuration tab decides what happens after a crash: <strong>Always</strong> (the default), <strong>Only after a crash</strong>, or <strong>Never</strong>. See <a href="#/wiki/server-tuning/restart-policy">Restart Automatically</a>.
           </p>
           <p>
-            Docker waits a little longer before each quick restart. If a server still crashes <strong>3 times within 2 minutes</strong>, Isopod stops it so a broken mod or world can&apos;t restart it forever, and the side panel says <strong>Crash loop stopped</strong>. Fix the problem, then press <strong>Launch</strong>.
+            Docker waits a little longer before each quick restart. If a server still crashes <strong>3 times within 2 minutes</strong>, Isopod stops it so a broken mod or world can&apos;t restart it forever, and the side panel says <strong>Crash loop stopped</strong>. Fix the problem, then press <strong>Start</strong>.
           </p>
 
           <h2 id="crash-report">
