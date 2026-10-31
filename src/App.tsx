@@ -108,6 +108,58 @@ const terminalSequence = [
   "isopod_test0  | [18:03:10] [Server thread/INFO]: Done (0.461s)! For help, type \"help\"",
 ]
 
+// Same grid as the dashboard's console logo in the Isopod repo. One letter per pixel, "." is empty.
+const logoPixels = [
+  ".bb...........bb.",
+  "...bb.......bb...",
+  ".....b.bbb.b.....",
+  ".....bbbbbbb.....",
+  "...rrrrbbbrrrr...",
+  "..rrrrrrwrrrrrr..",
+  "..ooooowwwooooo..",
+  ".oooooowwwoooooo.",
+  ".yyyyyywwwyyyyyy.",
+  ".yyyyyywwwyyyyyy.",
+  "lllllllwwwlllllll",
+  "lllllllwwwlllllll",
+  "gggggggwwwggggggg",
+  "gggggggwwwggggggg",
+  ".uuuuuuwwwuuuuuu.",
+  ".uuuuuuwwwuuuuuu.",
+  ".pppppppwppppppp.",
+  "..ppppppwpppppp..",
+  "...bbbbbwbbbbb...",
+  "...bbbbbbbbbbb...",
+  ".....bbbbbbb.....",
+  ".......bbb.......",
+]
+
+// The belly is a touch darker than the dashboard's so it still shows on the light theme's panel
+const logoColors: Record<string, string> = {
+  b: '#a0785a',
+  r: '#e0484e',
+  o: '#ff8450',
+  y: '#fcd45f',
+  l: '#8dc080',
+  g: '#2f9e62',
+  u: '#5f9bd9',
+  p: '#8558b8',
+  w: '#d9dce1',
+}
+
+const PixelLogo = ({ pixelSize = 2 }: { pixelSize?: number }) => (
+  <svg
+    width={logoPixels[0].length * pixelSize}
+    height={logoPixels.length * pixelSize}
+    viewBox={`0 0 ${logoPixels[0].length} ${logoPixels.length}`}
+    shapeRendering="crispEdges"
+  >
+    {logoPixels.flatMap((row, y) =>
+      [...row].map((pixel, x) => (pixel === '.' ? null : <rect key={`${x},${y}`} x={x} y={y} width={1} height={1} fill={logoColors[pixel]} />))
+    )}
+  </svg>
+)
+
 const MockTerminal = () => {
   const [lines, setLines] = useState<string[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -144,6 +196,10 @@ const MockTerminal = () => {
           <div className="h-3 w-3 rounded-full bg-success/60" />
         </div>
         <span className="ml-2 text-xs text-fg-muted">isopod@manager: ~/survival</span>
+      </div>
+      <div className="flex items-center gap-3 border-b border-border px-4 py-2" aria-hidden="true">
+        <PixelLogo />
+        <span className="font-bold text-fg-strong">Isopod</span>
       </div>
       <div ref={scrollRef} className="h-64 overflow-y-auto p-4" aria-hidden="true">
         {lines.map((line, idx) => (

@@ -1004,6 +1004,7 @@ services:
             <li><strong>Copy / Clear / Refresh:</strong> Copy the whole log to your clipboard, clear the view, or re-fetch logs from the server.</li>
             <li><strong>Search &amp; Find:</strong> Highlight matches and jump between them. <strong>Bottom</strong> scrolls back to the newest line.</li>
             <li><strong>Crash Report:</strong> Opens the newest crash report with its root cause. See <a href="#/wiki/crashes/crash-report">Crash Report</a>.</li>
+            <li><strong>Terminal logs:</strong> Isopod also prints its logo and version to the Docker logs when it starts. If your log viewer shows codes like <code>[38;5;137m</code> around the logo, set the environment variable <code>NO_COLOR=1</code> on the Isopod container to print it without color.</li>
           </ul>
 
           <h2 id="power">
