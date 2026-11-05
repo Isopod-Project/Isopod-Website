@@ -808,6 +808,9 @@ services:
           <p>
             With several mods selected, <strong>Enable</strong>, <strong>Disable</strong>, and <strong>Remove</strong> show how many mods they will change, for example <strong>Disable (3)</strong>. Remove asks once for all of them. Mods hidden by the search box are left out of the selection, so a batch action never changes a mod you can&apos;t see.
           </p>
+          <p>
+            Right-click a mod to open its context menu with the same <strong>Enable</strong>, <strong>Disable</strong>, <strong>Remove</strong>, and <strong>View Homepage</strong> actions as the sidebar. Right-clicking an unselected mod selects only it; right-clicking within an existing multi-selection keeps that selection. The menu closes when you click elsewhere, press <strong>Esc</strong>, or choose an action.
+          </p>
 
           <h2 id="modpack-mods">🗂️ Modpack Mods</h2>
           <p>
