@@ -536,7 +536,7 @@ services:
       title: 'Creating & Managing Instances',
       category: 'Servers',
       summary: "Create servers, organize them in groups, and use the side panel and right-click menu.",
-      sections: [{ id: 'create-instance', title: 'Creating a New Instance' }, { id: 'manage-instances', title: 'Managing Existing Instances' }, { id: 'import-modpacks', title: 'Importing & Modpacks' }, { id: 'curseforge-modpacks', title: 'CurseForge Modpacks' }, { id: 'groups', title: 'Groups' }, { id: 'context-menu', title: 'Right-Click Menu' }, { id: 'saving', title: 'Saving in the Edit Window' }],
+      sections: [{ id: 'create-instance', title: 'Creating a New Instance' }, { id: 'manage-instances', title: 'Managing Existing Instances' }, { id: 'import-modpacks', title: 'Importing & Modpacks' }, { id: 'curseforge-modpacks', title: 'CurseForge Modpacks' }, { id: 'modpack-updates', title: 'Updating a Modrinth Modpack' }, { id: 'groups', title: 'Groups' }, { id: 'context-menu', title: 'Right-Click Menu' }, { id: 'saving', title: 'Saving in the Edit Window' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -684,8 +684,33 @@ services:
             Keep your key private. Isopod only sends it to <code>api.curseforge.com</code> and passes it to the server container as an environment variable. It is not written to the instance&apos;s <code>docker-compose.yml</code>.
           </Callout>
 
+          <h2 id="modpack-updates">
+            <Box /> 5. Updating a Modrinth Modpack
+          </h2>
+          <p>
+            Servers created from a Modrinth modpack get a <strong>Modpack</strong> tab in the Edit window. It shows the pack, the version the server is on, and every version with its changelog.
+          </p>
+          <p>
+            Isopod checks Modrinth about once an hour. When a newer version is out, the server&apos;s tile shows <strong>Update Available</strong>, and the side panel shows a <strong>View Update</strong> button that opens the tab. <strong>Check Now</strong> in the tab checks right away.
+          </p>
+          <ol>
+            <li>Click <strong>Update to Latest</strong>, or <strong>Switch</strong> next to any version in the list. You can go to an older version the same way.</li>
+            <li>Read the confirmation. It warns you if the Minecraft version changes.</li>
+            <li>Keep <strong>Create backup before updating</strong> ticked. It saves the worlds, the <code>mods</code>, <code>config</code>, and <code>plugins</code> folders, <code>server.properties</code>, and the Docker settings, so you can roll back with <strong>Restore previous state</strong> in the side panel or from the <strong>Backups</strong> tab.</li>
+            <li>If the server is running, keep <strong>Restart the server now</strong> ticked to install the new version straight away. Otherwise it installs the next time the server starts.</li>
+          </ol>
+          <p>
+            Isopod sets the pack version, the Minecraft version, and the Java version for you. Client-only mods in the new version are excluded, and mods you removed or disabled stay that way.
+          </p>
+          <ul>
+            <li>A pack on a release version is only offered newer releases, and a pack on a beta isn&apos;t offered alphas. You can still pick those versions from the list.</li>
+            <li>Worlds can&apos;t be moved to an older Minecraft version safely. To undo an update that changed the Minecraft version, restore the backup.</li>
+            <li>CurseForge modpacks don&apos;t have this tab yet.</li>
+            <li>If <code>MODRINTH_MODPACK</code> holds a URL or a file path instead of a project ID, the tab says it can&apos;t check that pack.</li>
+          </ul>
+
           <h2 id="groups">
-            <Layers /> 5. Groups
+            <Layers /> 6. Groups
           </h2>
           <p>
             Groups sort your servers into labelled sections on the dashboard, for example &quot;Survival&quot; and &quot;Testing&quot;.
@@ -697,7 +722,7 @@ services:
           </ul>
 
           <h2 id="context-menu">
-            <Sliders /> 6. Right-Click Menu
+            <Sliders /> 7. Right-Click Menu
           </h2>
           <p>
             Right-click a server tile for:
@@ -720,7 +745,7 @@ services:
           </p>
 
           <h2 id="saving">
-            <Settings /> 7. Saving in the Edit Window
+            <Settings /> 8. Saving in the Edit Window
           </h2>
           <ul>
             <li><strong>Mods and Backups tabs:</strong> Changes apply right away. There is nothing to save.</li>
