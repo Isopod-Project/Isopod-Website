@@ -27,6 +27,8 @@ import {
   GitPullRequest,
   BookOpen,
   Bug,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { Callout, CodeBlock } from './ui'
 
@@ -222,6 +224,76 @@ const MockTerminal = () => {
   )
 }
 
+const DEMO_VIDEOS = [
+  { id: '6jrFq1MtpJE', title: "Isopod: Minecraft servers your friends can't break" },
+  { id: 'nJHWHoxPup0', title: 'I built a dashboard for running Minecraft servers in Docker' },
+]
+
+const DemoVideos = () => {
+  const [index, setIndex] = useState(0)
+  const video = DEMO_VIDEOS[index]
+  const step = (delta: number) =>
+    setIndex((i) => (i + delta + DEMO_VIDEOS.length) % DEMO_VIDEOS.length)
+
+  return (
+    <div className="mx-auto max-w-5xl">
+      <div className="relative">
+        <div className="aspect-video overflow-hidden rounded-xl border border-border shadow-2xl">
+          <iframe
+            key={video.id}
+            src={`https://www.youtube-nocookie.com/embed/${video.id}`}
+            title={video.title}
+            loading="lazy"
+            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            className="block h-full w-full"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => step(-1)}
+          aria-label="Previous video"
+          className="absolute left-2 top-1/2 hidden -translate-y-1/2 rounded-full border border-border bg-surface/90 p-2 shadow-lg transition hover:bg-surface sm:block lg:-left-14"
+        >
+          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          onClick={() => step(1)}
+          aria-label="Next video"
+          className="absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-full border border-border bg-surface/90 p-2 shadow-lg transition hover:bg-surface sm:block lg:-right-14"
+        >
+          <ChevronRight className="h-5 w-5" aria-hidden="true" />
+        </button>
+      </div>
+
+      <ul className="mt-6 grid grid-cols-2 gap-4" aria-label="Choose a video">
+        {DEMO_VIDEOS.map((v, i) => (
+          <li key={v.id}>
+            <button
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-pressed={i === index}
+              className={`group w-full overflow-hidden rounded-lg border text-left transition ${
+                i === index ? 'border-accent ring-2 ring-accent/40' : 'border-border opacity-70 hover:opacity-100'
+              }`}
+            >
+              <img
+                src={`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`}
+                alt=""
+                loading="lazy"
+                className="block aspect-video w-full object-cover"
+              />
+              <span className="block px-3 py-2 text-sm font-medium">{v.title}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 const Landing = () => (
   <>
     {/* Hero Section */}
@@ -294,6 +366,17 @@ const Landing = () => (
             className="block w-full"
           />
         </div>
+      </div>
+    </section>
+
+    {/* Demo Video */}
+    <section id="demo" aria-labelledby="demo-title" className="border-t border-border py-20 sm:py-24">
+      <div className="container-page">
+        <div className="mb-12 text-center">
+          <h2 id="demo-title" className="text-title mb-4">See it in action</h2>
+          <p className="lead mx-auto max-w-2xl">Watch Isopod set up servers, add mods, and manage them from the dashboard.</p>
+        </div>
+        <DemoVideos />
       </div>
     </section>
 
