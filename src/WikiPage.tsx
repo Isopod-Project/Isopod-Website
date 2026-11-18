@@ -317,7 +317,7 @@ export const WikiPage = () => {
       title: 'Quick Start Guide',
       category: 'Getting Started',
       summary: "Clone Isopod, start it with Docker Compose, and open the dashboard. Includes macOS and Windows steps.",
-      sections: [{ id: 'install', title: 'Install & Launch' }, { id: 'macos', title: 'Running on macOS' }, { id: 'windows', title: 'Windows Start Script' }, { id: 'lifecycle', title: 'Lifecycle Commands' }, { id: 'login', title: 'Logging In' }, { id: 'security', title: 'Keep the Dashboard Private' }],
+      sections: [{ id: 'install', title: 'Install & Launch' }, { id: 'linux-migration', title: 'Migrate an Existing Linux Install' }, { id: 'macos', title: 'Running on macOS' }, { id: 'windows', title: 'Windows Start Script' }, { id: 'lifecycle', title: 'Lifecycle Commands' }, { id: 'login', title: 'Logging In' }, { id: 'security', title: 'Keep the Dashboard Private' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -349,9 +349,9 @@ export const WikiPage = () => {
               <p>
                 Start Isopod in the background. The first run builds the image, which takes a few minutes:
               </p>
-              <CodeBlock code="docker compose -f isopod-compose.yml up -d --build" language="bash" />
+              <CodeBlock code="docker compose up -d --build" language="bash" />
               <p>
-                On a Mac, do the one-time <a href="#/wiki/getting-started/macos">macOS setup</a> first. On Windows you can use the <a href="#/wiki/getting-started/windows">start script</a> instead.
+                On Linux this uses the host Docker daemon. On a Mac, do the one-time <a href="#/wiki/getting-started/macos">macOS setup</a> first. On Windows you can use the <a href="#/wiki/getting-started/windows">start script</a> instead.
               </p>
             </div>
 
@@ -372,6 +372,21 @@ export const WikiPage = () => {
             </div>
           </div>
 
+          <p>
+            On Linux, the host&apos;s <code>docker ps</code> lists the server containers. They stay online when you stop, update, or recreate the dashboard. Each server publishes its own free TCP or UDP port.
+          </p>
+          <p>
+            The dashboard has root-equivalent access through the Docker socket. Keep dashboard access private. Server data defaults to <code>/DATA/AppData/isopod/servers</code>. To use a different location, set <code>ISOPOD_SERVERS_DIR</code> in <code>.env</code> to the real, absolute path on the host.
+          </p>
+
+          <h2 id="linux-migration">Migrate an Existing Linux Install</h2>
+          <p>
+            If your Linux install uses Docker-in-Docker, keep using <code>docker compose -f isopod-compose.yml</code> until you&apos;re ready to migrate. Stop your game servers from the old dashboard and back up the servers directory, including hidden files. Keep the same server data path in the new setup.
+          </p>
+          <p>
+            To keep cached or custom images, export them from the inner Docker daemon and load them on the host before taking down the old dashboard. Switch Compose files, then start the servers again from the dashboard. Isopod recreates the containers using the existing worlds. See the <a href="https://github.com/Isopod-Project/Isopod/blob/main/documentation/everyone/getting-started.md#migrate-from-docker-in-docker-on-linux">full migration steps</a> for the commands and how to switch back.
+          </p>
+
           <h2 id="macos">🍎 Running on macOS</h2>
           <p>
             <code>isopod-compose.yml</code> stores data under <code>/DATA/AppData/isopod</code>, a CasaOS path that doesn&apos;t exist on a Mac, so starting it as-is fails with <code>mounts denied</code>. The overlay file <code>docker/isopod-compose.macos.yml</code> swaps in Mac-friendly locations. Create a <code>.env</code> file in the root of your clone once so Docker Compose always loads it:
@@ -390,18 +405,21 @@ export const WikiPage = () => {
 
           <h2 id="windows">🪟 Windows Start Script</h2>
           <p>
-            On Windows, this script runs the same launch command, waits for the dashboard to come up, and opens it in your default browser:
+            On Windows, this script starts the Docker-in-Docker setup and opens the dashboard in your default browser:
           </p>
           <CodeBlock code={`.\\scripts\\start-isopod.ps1`} language="powershell" />
 
           <h2 id="lifecycle">🔧 Lifecycle Management Commands</h2>
+          <p>
+            Use the Compose file from your install for these commands. For the original Docker-in-Docker setup, add <code>-f isopod-compose.yml</code>. On macOS, keep the <code>COMPOSE_FILE</code> setting in <code>.env</code>.
+          </p>
           <Table
             headers={['Action', 'Command', 'Description']}
             rows={[
-              ['View Logs', <code key="logs">docker compose -f isopod-compose.yml logs -f</code>, 'Stream live backend and server container logs.'],
-              ['Stop Service', <code key="stop">docker compose -f isopod-compose.yml down</code>, 'Gracefully shuts down Isopod dashboard containers.'],
-              ['Restart Service', <code key="restart">docker compose -f isopod-compose.yml restart</code>, 'Quickly restarts the web backend.'],
-              ['Update to Latest', <code key="update">git pull && docker compose -f isopod-compose.yml up -d --build</code>, 'Pulls latest git commits and rebuilds the container image.']
+              ['View Logs', <code key="logs">docker compose logs -f</code>, 'Stream dashboard logs. On host Docker, use docker logs for individual servers.'],
+              ['Stop Service', <code key="stop">docker compose down</code>, 'Stops the dashboard. Host Docker servers stay online.'],
+              ['Restart Service', <code key="restart">docker compose restart</code>, 'Quickly restarts the web backend.'],
+              ['Update to Latest', <code key="update">git pull && docker compose up -d --build</code>, 'Pulls latest git commits and rebuilds the container image.']
             ]}
           />
 
@@ -596,7 +614,7 @@ services:
               <strong>Memory Slider:</strong> Allocate how much host RAM should be dedicated to this server (e.g. 2 GB, 4 GB, 8 GB).
             </li>
             <li>
-              <strong>Server Port:</strong> Default is <code>25565</code>. If you are creating a second server, assign an available port like <code>25566</code>. Isopod publishes ports <code>25565</code>-<code>25585</code>, so stay in that range.
+              <strong>Server Port:</strong> Default is <code>25565</code>. If you are creating a second server, assign an available port like <code>25566</code>. On Docker-in-Docker installs, choose a port published by the dashboard, typically <code>25565</code> to <code>25585</code>.
             </li>
             <li>
               <strong>Group (optional):</strong> File the new server under an existing group, or pick <strong>+ New Group...</strong> to make one. See <a href="#/wiki/dashboard-guide/groups">Groups</a>.
@@ -660,7 +678,7 @@ services:
             </li>
             <li>
               <strong>Restart Isopod</strong> so it picks the key up:
-              <CodeBlock code="docker compose -f isopod-compose.yml up -d" language="bash" />
+              <CodeBlock code="docker compose up -d" language="bash" />
             </li>
             <li>
               <strong>Create the server.</strong> Click <strong>Add Instance</strong>, open the <strong>CurseForge</strong> tab, search for a pack, and click it. The newest release is selected for you, or pick another version from the list. Name the server, continue, and start it.
@@ -1211,10 +1229,10 @@ services:
             <Wifi /> Ports
           </h2>
           <p>
-            Bedrock uses <strong>UDP</strong>, not TCP, so forward the port as UDP on your router (see <a href="#/wiki/port-forwarding">Port Forwarding</a>). Isopod publishes UDP ports <code>19132</code>-<code>19152</code>, so keep Bedrock ports in that range.
+            Bedrock uses <strong>UDP</strong>, not TCP, so forward the port as UDP on your router (see <a href="#/wiki/port-forwarding">Port Forwarding</a>). Host Docker can publish any free UDP port. Docker-in-Docker requires a port the dashboard publishes, typically <code>19132</code> to <code>19152</code>.
           </p>
           <Callout type="warning">
-            Installed Isopod before Bedrock support? Add <code>19132-19152:19132-19152/udp</code> to the ports in your compose file and recreate the container, or Bedrock players can&apos;t connect.
+            If your Docker-in-Docker install predates Bedrock support, add <code>19132-19152:19132-19152/udp</code> to the ports in your Compose file and recreate the container, or Bedrock players can&apos;t connect.
           </Callout>
 
           <h2 id="bedrock-limits">
@@ -1575,7 +1593,7 @@ services:
             <RefreshCw /> Updates
           </h2>
           <p>
-            Compare your installed Isopod version with the latest release, read its release notes, and click <strong>Update Now</strong> to install it. Running servers save and stop first, and servers set to restart come back afterwards. A progress bar follows the update, and Isopod reloads once the new version is running.
+            Compare your installed Isopod version with the latest release, read its release notes, and click <strong>Update Now</strong> to install it. Host Docker servers stay online. With Docker-in-Docker, running servers save and stop first, and servers set to restart come back afterwards. A progress bar follows the update, and Isopod reloads once the new version is running.
           </p>
           <p>
             If the new version fails to start, Isopod goes back to the one you had and tells you in this tab.
@@ -1584,9 +1602,9 @@ services:
             Some releases change the container itself, and installs from before v0.5.0 don&apos;t have this updater yet. In those cases the tab shows these commands instead, to run on the machine hosting Isopod, in the folder you cloned it into:
           </p>
           <CodeBlock code={`git pull
-docker compose -f isopod-compose.yml up -d --build`} language="bash" />
+docker compose up -d --build`} language="bash" />
           <p>
-            On macOS, leave out <code>-f isopod-compose.yml</code>. Your servers and worlds are kept.
+            Use the Compose file from your install. For the original Docker-in-Docker setup, add <code>-f isopod-compose.yml</code>. On macOS, keep the <code>COMPOSE_FILE</code> setting in <code>.env</code>.
           </p>
           <Callout type="warning">
             Versions before v0.4.1 show <strong>Update Now</strong> on every install, but there it only restarts the old version, even though the dashboard then reports the new one. Use the commands above.
@@ -1633,7 +1651,7 @@ docker compose -f isopod-compose.yml up -d --build`} language="bash" />
             <li><strong>RAM</strong> is shown as <code>2.2 GB used · 2.0 GB heap</code>. The heap is the memory set aside for Minecraft&apos;s world data (<code>MEMORY</code>, see <a href="#/wiki/server-tuning/memory">Memory</a>). Java needs extra memory on top of it, so using 10-30% more than the heap is normal.</li>
           </ul>
           <Callout type="note">
-            RAM always reads 0? Your Isopod image is older than this feature. Rebuild the image and recreate the container: <code>docker compose -f isopod-compose.yml up -d --build</code>.
+            RAM always reads 0? Your Isopod image is older than this feature. Rebuild the image and recreate the container: <code>docker compose up -d --build</code>.
           </Callout>
         </div>
       )
@@ -1661,7 +1679,7 @@ docker compose -f isopod-compose.yml up -d --build`} language="bash" />
             The dashboard checks every few seconds that it can still reach Isopod, even with Automatic Refresh off. If two checks in a row fail, a <strong>Lost connection to Isopod</strong> banner appears and every server shows <strong>Unknown</strong>, because its last known status can&apos;t be trusted. Once Isopod is reachable again, the banner clears and statuses reload on their own; <strong>Retry</strong> checks right away.
           </p>
           <p>
-            If the dashboard can&apos;t reach Isopod when it first loads, it shows <strong>Can&apos;t reach Isopod</strong> instead of an empty server list. Check that the container is running with <code>docker compose -f isopod-compose.yml ps</code>, and read its logs with <code>docker compose -f isopod-compose.yml logs -f</code>.
+            If the dashboard can&apos;t reach Isopod when it first loads, it shows <strong>Can&apos;t reach Isopod</strong> instead of an empty server list. Check that the container is running with <code>docker compose ps</code>, and read its logs with <code>docker compose logs -f</code>.
           </p>
 
           <h2 id="common-problems">
@@ -1671,9 +1689,9 @@ docker compose -f isopod-compose.yml up -d --build`} language="bash" />
             headers={['Problem', 'What to try']}
             rows={[
               [<>The server crashes or keeps restarting</>, <>Open the <a href="#/wiki/crashes/crash-report">Crash Report</a>. If a mod update caused it, use <strong>Restore previous state</strong>.</>],
-              [<>Creating a server fails with a port error</>, <>Another server already uses that port. Pick a free one between 25565 and 25585.</>],
+              [<>Creating a server fails with a port error</>, <>Another server already uses that port. Pick a free port. With Docker-in-Docker, use one the dashboard publishes.</>],
               [<>Friends can&apos;t join</>, <>Forward the server&apos;s port (TCP for Java, UDP for Bedrock), or use a <a href="#/wiki/tunneling-alternatives">tunnel</a>.</>],
-              [<>Bedrock players can&apos;t join</>, <>Check that the UDP ports 19132-19152 are in your compose file. See <a href="#/wiki/bedrock/bedrock-ports">Bedrock Ports</a>.</>],
+              [<>Bedrock players can&apos;t join</>, <>Check the UDP port and your firewall. With Docker-in-Docker, the dashboard must publish the port. See <a href="#/wiki/bedrock/bedrock-ports">Bedrock Ports</a>.</>],
               [<><code>mounts denied</code> on a Mac</>, <>Do the one-time <a href="#/wiki/getting-started/macos">macOS setup</a> and run <code>docker compose</code> without <code>-f</code>.</>],
               [<>CurseForge says &quot;Couldn&apos;t load modpacks&quot;</>, <>See the table in <a href="#/wiki/dashboard-guide/curseforge-modpacks">CurseForge Modpacks</a>.</>],
               [<>A console command does nothing</>, <>A failed command stays in the input box with the reason in the log.</>]
