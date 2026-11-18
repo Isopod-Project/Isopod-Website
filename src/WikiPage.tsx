@@ -1234,7 +1234,7 @@ services:
       title: 'Crashes & Auto-Restart',
       category: 'Servers',
       summary: "How Isopod spots crashes, restarts servers, stops crash loops, and shows crash reports.",
-      sections: [{ id: 'crash-badges', title: 'When a Server Crashes' }, { id: 'auto-restart', title: 'Auto-Restart & Crash Loops' }, { id: 'crash-report', title: 'Crash Report' }],
+      sections: [{ id: 'crash-badges', title: 'When a Server Crashes' }, { id: 'auto-restart', title: 'Auto-Restart & Crash Loops' }, { id: 'crash-report', title: 'Crash Report' }, { id: 'rollback-suggestions', title: 'Rollback Suggestions' }],
       content: () => (
         <div>
           <div className="badge badge-accent mb-4">
@@ -1280,9 +1280,57 @@ services:
             rows={[
               ['No crash report found', 'Crashes like running out of memory or a port already in use don\'t write one. Read the log lines shown below it.'],
               ['Out of memory', 'Raise MEMORY in the Configuration tab. See Memory.'],
-              ['A suspected mod is listed', 'Disable or remove that mod in the Mods tab, or use Restore previous state if it came in with an update.']
+              ['A suspected mod is listed', 'Check its Rollback Suggestions below. Otherwise disable or remove that mod in the Mods tab, or use Restore previous state if it came in with an update.']
             ]}
           />
+
+          <h2 id="rollback-suggestions">
+            <RefreshCw /> Rollback Suggestions
+          </h2>
+          <p>
+            When the crash report names suspect mods, Isopod compares each one with the mod files recorded in the <a href="#/wiki/backups/snapshots">pre-update snapshots</a> taken before the crash. It uses the newest snapshot in which that mod was different from today, and shows what it found:
+          </p>
+          <Table
+            headers={['Label', 'What it means']}
+            rows={[
+              ['Previous version recorded', 'The mod changed after the snapshot. You see the current and previous versions, which snapshot the evidence comes from, and a Roll back button.'],
+              ['Added after the snapshot', 'There is no earlier version to go back to. Disable the mod in the Mods tab to test whether it causes the crash.'],
+              ['Unchanged', 'The mod is the same as in every snapshot, so rolling it back would not help.'],
+              ['No recorded history', 'No snapshot was taken before the crash. Isopod does not guess a version.'],
+              ['No longer installed / Not matched to a mod', 'Isopod could not tie the suspect to a mod file it can roll back.']
+            ]}
+          />
+          <p>
+            Isopod only suggests versions it recorded. It never looks up an older version online and calls it a fix, and a crash never changes your mods on its own.
+          </p>
+          <h3>Two kinds of rollback</h3>
+          <ul>
+            <li><strong>Roll back</strong> on a suggestion puts back just that mod&apos;s jar from the snapshot. The world, config, and other mods stay as they are. Isopod takes a new snapshot first, so you can undo it from the Backups tab.</li>
+            <li><strong>Restore whole snapshot</strong> puts the world, mods, config, and server settings back to how they were. Everything since then is lost, <strong>including world progress</strong>.</li>
+          </ul>
+          <p>
+            The server must be stopped for either one. Isopod asks you to confirm and lists exactly which files change.
+          </p>
+          <h3>Dependencies and compatibility</h3>
+          <ul>
+            <li>If a library the mod needs, or a mod that needs it, changed at the same time, they roll back together. The suggestion lists every mod in the group.</li>
+            <li>When a mod added after the snapshot needs the suspect, the suggestion warns that it may not work with the older version.</li>
+            <li>When several suspects changed, each gets its own suggestion, and rolling back one may not be enough.</li>
+          </ul>
+          <Table
+            headers={['The Roll back button is unavailable because…', 'What to do']}
+            rows={[
+              ['The snapshot ran a different Minecraft version or server type', 'The older jar was built for that setup. Restore the whole snapshot, or find a version for your current setup.'],
+              ['The mod came from CurseForge', 'The server downloads the newest version on every start, so Isopod can\'t hold it back. Disable the mod until a fix is out, or restore the whole snapshot.'],
+              ['The mod is part of a modpack', 'The pack reinstalls its own version on every start. Restore the whole snapshot or change the modpack version.']
+            ]}
+          />
+          <Callout type="note">
+            Mods added from Modrinth are <strong>pinned</strong> to the restored version, so the server doesn&apos;t download the newest one again on its next start. To get updates for that mod again, remove it and add it back in the Mods tab.
+          </Callout>
+          <p>
+            If the loader version changed since the snapshot, the suggestion says so. The older jar ran on the old loader, so test the server after rolling back.
+          </p>
         </div>
       )
     },
