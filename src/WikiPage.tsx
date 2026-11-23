@@ -614,7 +614,7 @@ services:
               <strong>Memory Slider:</strong> Allocate how much host RAM should be dedicated to this server (e.g. 2 GB, 4 GB, 8 GB).
             </li>
             <li>
-              <strong>Server Port:</strong> Default is <code>25565</code>. If you are creating a second server, assign an available port like <code>25566</code>. On Docker-in-Docker installs, choose a port published by the dashboard, typically <code>25565</code> to <code>25585</code>.
+              <strong>Server Port:</strong> Isopod suggests the next available port, starting at <code>25565</code> for Java or <code>19132</code> for Bedrock. Stopped instances keep their ports. To change an existing server’s port, open its Advanced configuration. Standard Docker-in-Docker installs publish Java ports <code>25565–25585</code> and Bedrock ports <code>19132–19152</code>.
             </li>
             <li>
               <strong>Group (optional):</strong> File the new server under an existing group, or pick <strong>+ New Group...</strong> to make one. See <a href="#/wiki/dashboard-guide/groups">Groups</a>.
