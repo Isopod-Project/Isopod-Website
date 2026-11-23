@@ -619,8 +619,14 @@ services:
             <li>
               <strong>Group (optional):</strong> File the new server under an existing group, or pick <strong>+ New Group...</strong> to make one. See <a href="#/wiki/dashboard-guide/groups">Groups</a>.
             </li>
-            <li>Click <strong>Create</strong>. Isopod writes the container configuration, registers the instance, and selects it so you can start it right away. If creation fails (for example, the port is taken), the error says why.</li>
+            <li>
+              <strong>Accept the Minecraft EULA:</strong> Tick <em>I accept the Minecraft EULA</em> at the bottom of the window. Everyone who runs a Minecraft server has to agree to the <a href="https://aka.ms/MinecraftEULA" target="_blank" rel="noopener noreferrer">Minecraft End User License Agreement</a>, so Isopod asks you instead of accepting it for you. <strong>Create Instance</strong> stays disabled until it&apos;s ticked. The same checkbox appears for imports and modpacks.
+            </li>
+            <li>Click <strong>Create Instance</strong>. Isopod writes the container configuration, registers the instance, and selects it so you can start it right away. If creation fails (for example, the port is taken), the error says why.</li>
           </ol>
+          <p className="text-xs text-fg-muted">
+            Servers created before Isopod asked about the EULA count as accepted and start as before.
+          </p>
 
           <h2 id="manage-instances">
             <Layers /> 2. Managing Existing Instances
@@ -1145,6 +1151,7 @@ services:
             <li>Click <strong>Add Instance</strong> and pick <strong>BEDROCK</strong> as the server type. Isopod runs Mojang&apos;s Bedrock Dedicated Server.</li>
             <li>The port switches to <code>19132</code>, the standard Bedrock port.</li>
             <li>Choose <strong>Latest release</strong> or <strong>Preview</strong> (for players on Minecraft Preview). To stay on one release, type its exact number, like <code>1.21.50.07</code>, in the <strong>Versions</strong> tab.</li>
+            <li>Tick the checkbox to accept the <a href="https://aka.ms/MinecraftEULA" target="_blank" rel="noopener noreferrer">Minecraft EULA</a> and the <a href="https://go.microsoft.com/fwlink/?LinkId=521839" target="_blank" rel="noopener noreferrer">Microsoft Privacy Policy</a>, the terms the Bedrock Dedicated Server is licensed under. You can&apos;t create the server until it&apos;s ticked.</li>
             <li>Create and start the server, then add it in Minecraft under <strong>Play &rarr; Servers &rarr; Add Server</strong> with the address shown in the side panel.</li>
           </ol>
           <p>
